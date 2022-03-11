@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/drawable/group_channel_list_member_background.xml" value="0.2985" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/drawable/group_channel_list_unread_background.xml" value="0.2985" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/drawable/typing_indicator_dot.xml" value="0.2985" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/activity_main.xml" value="0.35260416666666666" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/fragment_home.xml" value="0.36666666666666664" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/fragment_login.xml" value="0.358695652173913" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/item_rc_group_channel.xml" value="0.36666666666666664" />
+        <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/layout_typing_indicator.xml" value="0.36666666666666664" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
