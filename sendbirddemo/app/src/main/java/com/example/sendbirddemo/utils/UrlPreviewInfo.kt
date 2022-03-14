@@ -3,11 +3,11 @@ package com.example.sendbirddemo.utils
 import org.json.JSONObject
 
 data class UrlPreviewInfo(
-    private val mUrl: String? = null,
-    private val mSiteName: String? = null,
-    private val mTitle: String? = null,
-    private val mDescription: String? = null,
-    private val mImageUrl: String? = null
+    val mUrl: String? = null,
+    val mSiteName: String? = null,
+    val mTitle: String? = null,
+    val mDescription: String? = null,
+    val mImageUrl: String? = null
 ) {
     fun toJsonString(): String {
         val jsonObject = JSONObject()

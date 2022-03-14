@@ -1,4 +1,4 @@
-package com.example.demojetpack.ui.base
+package com.example.sendbirddemo.ui.base
 
 import android.content.Context
 import android.os.Bundle
@@ -9,9 +9,16 @@ import android.view.inputmethod.InputMethodManager
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import com.sendbird.android.SendBird
+import com.sendbird.android.SendBird.ConnectionHandler
+import com.sendbird.syncmanager.SendBirdSyncManager
 
 abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
     protected var binding: V? = null
+
+    protected open fun getConnectionHandlerId(): String {
+        return "CONNECTION_HANDLER_MAIN_ACTIVITY"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +47,20 @@ abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
+    }
+
+    fun registerConnectionHandler() {
+        SendBird.addConnectionHandler(getConnectionHandlerId(), object : ConnectionHandler {
+            override fun onReconnectStarted() {
+                SendBirdSyncManager.getInstance().pauseSync()
+            }
+
+            override fun onReconnectSucceeded() {
+                SendBirdSyncManager.getInstance().resumeSync()
+            }
+
+            override fun onReconnectFailed() {}
+        })
     }
 
     abstract fun getLayoutID(): Int

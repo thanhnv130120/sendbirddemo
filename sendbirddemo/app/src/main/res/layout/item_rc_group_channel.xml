@@ -75,7 +75,7 @@
                 android:layout_marginTop="4dp" />
 
             <TextView
-                android:id="@+id/tvGroupChannelMessage"
+                android:id="@+id/tvGroupChannelLastMessage"
                 android:layout_width="223dp"
                 android:layout_height="32dp"
                 android:layout_marginTop="2dp"
@@ -100,7 +100,7 @@
             android:textSize="11.5sp" />
 
         <TextView
-            android:id="@+id/text_group_channel_list_unread_count"
+            android:id="@+id/tvGroupChannelUnreadCount"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"

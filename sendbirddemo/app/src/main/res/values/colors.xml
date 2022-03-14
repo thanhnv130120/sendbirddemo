@@ -11,4 +11,13 @@
     <!-- Group Channel List -->
     <color name="groupChannelUnreadCountBackground">#7d62df</color>
     <color name="groupChannelUnreadCountText">#ffffff</color>
+
+    <color name="btn_send">#774df2</color>
+    <color name="btn_send_disabled">#8e8e8e</color>
+    <color name="groupChatDateBackground">#C0C0C0</color>
+    <color name="groupChatAdminBackground">#e0fcff</color>
+    <color name="groupChatBubbleMe">#774df2</color>
+    <color name="groupChatTextMe">#ffffff</color>
+    <color name="groupChatBubbleOther">#eef1f6</color>
+    <color name="groupChatTextOther">#000000</color>
 </resources>

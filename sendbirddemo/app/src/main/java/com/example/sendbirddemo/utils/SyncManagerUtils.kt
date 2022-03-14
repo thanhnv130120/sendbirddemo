@@ -115,9 +115,9 @@ object SyncManagerUtils {
         } else ""
     }
 
-//    fun getMyUserId(): String? {
-//        return if (SendBird.getCurrentUser() == null) {
-//            PreferenceUtils.getUserId()
-//        } else SendBird.getCurrentUser().userId
-//    }
+    fun getMyUserId(context: Context): String? {
+        return if (SendBird.getCurrentUser() == null) {
+            SharedPreferenceUtils.getInstance(context)?.getUserId()
+        } else SendBird.getCurrentUser().userId
+    }
 }

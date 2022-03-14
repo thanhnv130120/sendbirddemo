@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <RelativeLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:layout_marginBottom="8dp">
+
+        <include
+            android:id="@+id/mLayoutChatInfo"
+            layout="@layout/partial_group_chat_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mLayoutChatInfo">
+
+            <LinearLayout
+                android:id="@+id/mLayoutChatFileMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/group_chat_file_background"
+                android:layout_alignParentTop="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="8dp">
+
+                <ImageView
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_file_message" />
+
+                <TextView
+                    android:id="@+id/tvFileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginStart="12dp"
+                    android:ellipsize="middle"
+                    android:singleLine="true"
+                    android:text="File Name.xls" />
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginStart="12dp"
+                    android:background="#d8d8d8" />
+
+                <Button
+                    android:id="@+id/btnDownload"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginLeft="7dp"
+                    android:layout_marginStart="7dp"
+                    android:background="@drawable/ic_file_message_download" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvChatTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/mLayoutChatFileMessage"
+                android:layout_toLeftOf="@id/mLayoutChatFileMessage"
+                android:text="21:27"
+                android:textColor="#8e8e8e"
+                android:textSize="10dp" />
+
+            <com.example.sendbirddemo.widget.MessageStatusView
+                android:id="@+id/mLayoutMessageStatus"
+                android:layout_above="@id/tvChatTime"
+                android:layout_alignEnd="@id/tvChatTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+    </RelativeLayout>
+</layout>

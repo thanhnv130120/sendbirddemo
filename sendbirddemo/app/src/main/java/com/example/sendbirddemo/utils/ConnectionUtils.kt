@@ -1,24 +1,43 @@
 package com.example.sendbirddemo.utils
 
+import android.content.Context
 import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.DisconnectHandler
+import com.sendbird.android.SendBirdException
+import com.sendbird.android.User
 import com.sendbird.syncmanager.SendBirdSyncManager
 
-class ConnectionUtils(val onConnectionListener: OnConnectionListener) {
+class ConnectionUtils {
 
-    fun connectToSendBird(userID: String, nickname: String) {
-        SendBird.connect(userID) { user, e ->
-            if (e != null) {
-                onConnectionListener.onConnectFailed()
-            } else {
-                SendBird.updateCurrentUserInfo(nickname, null) { e ->
-                    if (e != null) {
-                        onConnectionListener.onConnectFailed()
+    fun connectToSendBird(
+        context: Context,
+        userID: String,
+        nickname: String,
+        handler: SendBird.ConnectHandler?
+    ) {
+        SendBird.connect(userID, object : SendBird.ConnectHandler {
+            override fun onConnected(user: User?, e: SendBirdException?) {
+                if (e != null) {
+                    if (handler != null) {
+                        handler.onConnected(user, e)
+                        return
                     }
-                    onConnectionListener.onConnectSuccess()
                 }
+                SyncManagerUtils.setup(
+                    context, userID
+                ) { SendBirdSyncManager.getInstance().resumeSync() }
+                SendBird.updateCurrentUserInfo(
+                    nickname,
+                    null
+                ) { p0 ->
+                    if (p0 == null) {
+                        SharedPreferenceUtils.getInstance(context)?.setNickname(nickname)
+                    }
+                }
+                handler?.onConnected(user, e)
             }
-        }
+
+        })
     }
 
     fun disconnect(handler: DisconnectHandler?) {
@@ -26,10 +45,5 @@ class ConnectionUtils(val onConnectionListener: OnConnectionListener) {
             SendBirdSyncManager.getInstance().pauseSync()
             handler?.onDisconnected()
         }
-    }
-
-    interface OnConnectionListener {
-        fun onConnectFailed()
-        fun onConnectSuccess()
     }
 }

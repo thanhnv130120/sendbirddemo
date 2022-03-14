@@ -144,14 +144,13 @@ class ChatUtils(val onGroupListener: OnGroupListener) {
                     return
                 }
                 var tempUserMessage: UserMessage? = null
-                val handler = object : BaseChannel.SendUserMessageHandler {
-                    override fun onSent(userMessage: UserMessage?, e: SendBirdException?) {
+                val handler =
+                    BaseChannel.SendUserMessageHandler { userMessage, e ->
                         if (e != null) {
 
                         }
                         mMessageCollection?.handleSendMessageResponse(userMessage, e)
                     }
-                }
                 tempUserMessage = try {
                     val jsonString = info?.toJsonString()
                     mChannel!!.sendUserMessage(text, jsonString, "url_preview", handler)
