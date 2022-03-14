@@ -1,0 +1,82 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
+
+        <include
+            android:id="@+id/mLayoutChatInfo"
+            layout="@layout/partial_group_chat_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mLayoutChatInfo">
+
+            <ImageView
+                android:id="@+id/imgImageProfile"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignWithParentIfMissing="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/profile_placeholder" />
+
+            <TextView
+                android:id="@+id/tvNickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/imgImageProfile"
+                android:layout_toEndOf="@id/imgImageProfile"
+                android:text="Daniel Silberschatz"
+                android:textSize="16sp" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvChatMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvNickname"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toEndOf="@id/imgImageProfile"
+                app:cardBackgroundColor="@color/cardview_light_background"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardPreventCornerOverlap="false"
+                app:cardUseCompatPadding="true">
+
+                <ImageView
+                    android:id="@+id/imgChatThumbnail"
+                    android:layout_width="228dp"
+                    android:layout_height="148dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop" />
+
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/tvChatTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/cvChatMessage"
+                android:layout_marginBottom="8dp"
+                android:layout_toEndOf="@id/cvChatMessage"
+                android:text="21:27"
+                android:textColor="#8e8e8e"
+                android:textSize="10dp" />
+
+        </RelativeLayout>
+    </RelativeLayout>
+</layout>

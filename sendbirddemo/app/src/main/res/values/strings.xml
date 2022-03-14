@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">sendbirddemo</string>
-    <string name="group_channel_list_file_message_text">%1$s has uploaded a file.</string>
-    <string name="typing_status">Someone is typing…</string>
-</resources>

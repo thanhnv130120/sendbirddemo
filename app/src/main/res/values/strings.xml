@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">sendbirddemo</string>
+    <string name="group_channel_list_file_message_text">%1$s has uploaded a file.</string>
+    <string name="typing_status">Someone is typing…</string>
+
+    <string name="option_delete_message">Delete message</string>
+    <string name="option_edit_message">Edit message</string>
+    <string name="action_send_message">SEND</string>
+    <string name="action_update_message">SAVE</string>
+    <string name="get_channel_failed">failed to get channel.</string>
+    <string name="user_typing">%s is typing</string>
+    <string name="two_users_typing">%s and %s is typing</string>
+    <string name="users_typing"> Multiple users are typing</string>
+    <string name="request_external_storage">Storage access permissions are required to upload/download files.</string>
+    <string name="request_download_file">Download file?</string>
+    <string name="send_message_error">Send failed with error: %d : %s</string>
+    <string name="wrong_file_info">Extracting file information failed.</string>
+    <string name="wrong_file_path">File must be located in local storage.</string>
+    <string name="request_retry_send_message">Retry?</string>
+
+    <string name="sendbird_error_with_code">Error: %d : %s</string>
+    <string name="sendbird_error">Error : %s</string>
+</resources>
