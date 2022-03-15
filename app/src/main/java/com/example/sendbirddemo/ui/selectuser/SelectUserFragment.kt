@@ -1,6 +1,7 @@
 package com.example.sendbirddemo.ui.selectuser
 
 import android.content.Intent
+import android.util.Log
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -9,6 +10,8 @@ import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.FragmentSelectUserBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.ui.selectuser.adapter.SelectableUserAdapter
+import com.example.sendbirddemo.utils.ChatUtils
+import com.example.sendbirddemo.utils.GroupUtils
 import com.sendbird.android.*
 import com.sendbird.android.GroupChannel.GroupChannelCreateHandler
 import com.sendbird.android.UserListQuery.UserListQueryResultHandler
@@ -20,13 +23,35 @@ class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
         SelectableUserAdapter()
     }
     private var mSelectedIds = mutableListOf<String>()
+    private val chatUtils: ChatUtils by lazy {
+        ChatUtils()
+    }
+    private val groupUtils: GroupUtils by lazy {
+        GroupUtils(object : GroupUtils.OnGroupListener {
+            override fun onCreateGroupSuccess(groupUrl: String) {
+                val action = SelectUserFragmentDirections.actionGlobalChatFragment()
+                    .setGroupChannelUrl(groupUrl)
+                findNavController().navigate(action)
+            }
+
+            override fun onInviteMembers() {
+
+            }
+
+            override fun onLeaveGroupSuccess() {
+
+            }
+
+        })
+    }
 
     override fun getLayoutID() = R.layout.fragment_select_user
 
     override fun initView() {
-        mSelectableUserAdapter.setItemCheckedChangeListener(object : SelectableUserAdapter.OnItemCheckedChangeListener{
+        mSelectableUserAdapter.setItemCheckedChangeListener(object :
+            SelectableUserAdapter.OnItemCheckedChangeListener {
             override fun OnItemChecked(user: User?, checked: Boolean) {
-                if (checked){
+                if (checked) {
                     mSelectedIds.add(user!!.userId)
                 } else {
                     mSelectedIds.remove(user!!.userId)
@@ -35,16 +60,17 @@ class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
 
         })
 
+        Log.d("TAG", "initView: ${SendBird.getConnectionState()}")
         if (SendBird.getConnectionState() == SendBird.ConnectionState.OPEN) {
             setUpRecyclerView()
             loadInitialUserList(15)
         }
 
         binding!!.fabCreateGroup.setOnClickListener {
-            if (mSelectedIds.isEmpty()){
+            if (mSelectedIds.isEmpty()) {
 
             } else {
-                createGroupChannel(mSelectedIds.toList())
+                groupUtils.createGroupChannel(mSelectedIds, false)
             }
         }
     }
@@ -95,29 +121,5 @@ class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
                 mSelectableUserAdapter.addLast(user)
             }
         })
-    }
-
-    /**
-     * Creates a new Group Channel.
-     *
-     * Note that if you have not included empty channels in your GroupChannelListQuery,
-     * the channel will not be shown in the user's channel list until at least one message
-     * has been sent inside.
-     *
-     * @param userIds   The users to be members of the new channel.
-     * @param distinct  Whether the channel is unique for the selected members.
-     * If you attempt to create another Distinct channel with the same members,
-     * the existing channel instance will be returned.
-     */
-    private fun createGroupChannel(userIds: List<String>) {
-        GroupChannel.createChannelWithUserIds(userIds, false,
-            GroupChannelCreateHandler { groupChannel, e ->
-                if (e != null) {
-                    // Error!
-                    return@GroupChannelCreateHandler
-                }
-                val action= SelectUserFragmentDirections.actionGlobalChatFragment().setGroupChannelUrl(groupChannel.url)
-                findNavController().navigate(action)
-            })
     }
 }

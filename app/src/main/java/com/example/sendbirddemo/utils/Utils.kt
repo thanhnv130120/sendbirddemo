@@ -242,4 +242,8 @@ object Utils {
                 .into(imageView!!)
         }
     }
+
+    fun isEmpty(text: CharSequence?): Boolean {
+        return text == null || text.isEmpty()
+    }
 }

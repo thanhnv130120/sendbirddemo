@@ -1,11 +1,14 @@
 package com.example.sendbirddemo.ui.chat.adapter
 
+import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sendbirddemo.databinding.*
+import com.example.sendbirddemo.utils.SyncManagerUtils
+import com.example.sendbirddemo.utils.SyncManagerUtils.getMyUserId
 import com.example.sendbirddemo.utils.UrlPreviewInfo
 import com.example.sendbirddemo.utils.Utils
 import com.sendbird.android.*
@@ -14,13 +17,14 @@ import kotlinx.android.synthetic.main.partial_group_chat_info.view.*
 import org.json.JSONException
 import java.util.*
 
-class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var mGroupChannel: GroupChannel? = null
     private val mMessageList = mutableListOf<BaseMessage>()
     private val mFailedMessageList = mutableListOf<BaseMessage>()
-    private val mResendingMessageSet: Set<String>? = null
+    private val mResendingMessageSet = mutableSetOf<String>()
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
+    private var mOnItemMessageListener: OnItemMessageListener? = null
 
     private fun getMessage(position: Int): BaseMessage? {
         return when {
@@ -88,7 +92,7 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isResendingMessage(message: BaseMessage?): Boolean {
         return if (message == null) {
             false
-        } else mResendingMessageSet!!.contains(getRequestId(message))
+        } else mResendingMessageSet.contains(getRequestId(message))
     }
 
     private fun getRequestId(message: BaseMessage): String? {
@@ -107,6 +111,126 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         return if (message !is FileMessage) {
             null
         } else mTempFileMessageUriTable[message.requestId]
+    }
+
+    fun addTempFileMessageInfo(message: FileMessage, uri: Uri?) {
+        mTempFileMessageUriTable[message.requestId] = uri
+    }
+
+    fun insertSucceededMessages(messages: List<BaseMessage?>) {
+        for (message in messages) {
+            val index: Int = SyncManagerUtils.findIndexOfMessage(mMessageList, message!!)
+            mMessageList.add(index, message)
+        }
+        notifyDataSetChanged()
+    }
+
+    fun updateSucceededMessages(messages: List<BaseMessage?>) {
+        for (message in messages) {
+            val index: Int = SyncManagerUtils.getIndexOfMessage(mMessageList, message!!)
+            if (index != -1) {
+                mMessageList[index] = message
+                notifyItemChanged(index)
+            }
+        }
+    }
+
+    fun removeSucceededMessages(messages: List<BaseMessage?>) {
+        for (message in messages) {
+            val index: Int = SyncManagerUtils.getIndexOfMessage(mMessageList, message!!)
+            if (index != -1) {
+                mMessageList.removeAt(index)
+            }
+        }
+        notifyDataSetChanged()
+    }
+
+    /**
+     * Notifies that the user has read all (previously unread) messages in the channel.
+     * Typically, this would be called immediately after the user enters the chat and loads
+     * its most recent messages.
+     */
+    fun markAllMessagesAsRead() {
+        if (mGroupChannel != null) {
+            mGroupChannel!!.markAsRead()
+        }
+        notifyDataSetChanged()
+    }
+
+    fun getLastReadPosition(lastRead: Long): Int {
+        for (i in mMessageList.indices) {
+            if (mMessageList[i].createdAt == lastRead) {
+                return i + mFailedMessageList.size
+            }
+        }
+        return 0
+    }
+
+    fun insertFailedMessages(messages: List<BaseMessage?>) {
+        synchronized(mFailedMessageList) {
+            for (message in messages) {
+                val requestId = getRequestId(message!!)
+                if (requestId!!.isEmpty()) {
+                    continue
+                }
+                mResendingMessageSet.add(requestId)
+                mFailedMessageList.add(message)
+            }
+            mFailedMessageList.sortWith(Comparator { m1, m2 ->
+                val x = m1.createdAt
+                val y = m2.createdAt
+                if (x < y) 1 else if (x == y) 0 else -1
+            })
+        }
+        notifyDataSetChanged()
+    }
+
+    fun updateFailedMessages(messages: List<BaseMessage?>) {
+        synchronized(mFailedMessageList) {
+            for (message in messages) {
+                val requestId = getRequestId(message!!)
+                if (requestId!!.isEmpty()) {
+                    continue
+                }
+                mResendingMessageSet.remove(requestId)
+            }
+        }
+        notifyDataSetChanged()
+    }
+
+    fun removeFailedMessages(messages: List<BaseMessage?>) {
+        synchronized(mFailedMessageList) {
+            for (message in messages) {
+                val requestId = getRequestId(message!!)
+                mResendingMessageSet.remove(requestId)
+                mFailedMessageList.remove(message)
+            }
+        }
+        notifyDataSetChanged()
+    }
+
+    fun failedMessageListContains(message: BaseMessage?): Boolean {
+        if (mFailedMessageList.isEmpty()) {
+            return false
+        }
+        for (failedMessage in mFailedMessageList) {
+            if (message is UserMessage && failedMessage is UserMessage) {
+                if (message.requestId == failedMessage.requestId) {
+                    return true
+                }
+            } else if (message is FileMessage && failedMessage is FileMessage) {
+                if (message.requestId == failedMessage.requestId) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    fun clear() {
+        mMessageList.clear()
+        mFailedMessageList.clear()
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -194,7 +318,7 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     listItemGroupChatFileMessageVideoMeBinding
                 )
             }
-            VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER -> {
+            else -> {
                 val listItemGroupChatFileMessageVideoOtherBinding =
                     ListItemGroupChatFileVideoOtherBinding.inflate(
                         LayoutInflater.from(parent.context),
@@ -203,16 +327,6 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     )
                 OtherVideoFileMessageHolder(
                     listItemGroupChatFileMessageVideoOtherBinding
-                )
-            }
-            else -> {
-                val listItemGroupChatAdminBinding = ListItemGroupChatAdminBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                )
-                AdminMessageHolder(
-                    listItemGroupChatAdminBinding
                 )
             }
         }
@@ -254,6 +368,7 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 mGroupChannel,
                 isContinuous,
                 isNewDay,
+                mOnItemMessageListener
             )
             VIEW_TYPE_USER_MESSAGE_OTHER -> (holder as OtherUserMessageHolder).bind(
                 message as UserMessage,
@@ -295,16 +410,73 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             )
             VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER -> (holder as OtherVideoFileMessageHolder).bind(
                 message as FileMessage,
-                mGroupChannel,
                 isNewDay,
                 isContinuous
             )
-            else -> {
-            }
         }
     }
 
     override fun getItemCount() = mMessageList.size + mFailedMessageList.size
+
+    override fun getItemViewType(position: Int): Int {
+        val message = getMessage(position)
+        var isMyMessage = false
+
+        if (message is UserMessage) {
+            val requestState = message.requestState
+            if (requestState == UserMessage.RequestState.PENDING || requestState == UserMessage.RequestState.FAILED || message.sender.userId == getMyUserId(
+                    context
+                )
+            ) {
+                isMyMessage = true
+            }
+        } else if (message is FileMessage) {
+            val requestState = message.requestState
+            if (requestState == FileMessage.RequestState.PENDING || requestState == FileMessage.RequestState.FAILED || message.sender.userId == getMyUserId(
+                    context
+                )
+            ) {
+                isMyMessage = true
+            }
+        }
+
+        when (message) {
+            is UserMessage -> {
+                return if (isMyMessage) {
+                    VIEW_TYPE_USER_MESSAGE_ME
+                } else {
+                    VIEW_TYPE_USER_MESSAGE_OTHER
+                }
+            }
+            is FileMessage -> {
+                return if (message.type.toLowerCase().startsWith("image")) {
+                    // If the sender is current user
+                    if (isMyMessage) {
+                        VIEW_TYPE_FILE_MESSAGE_IMAGE_ME
+                    } else {
+                        VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER
+                    }
+                } else if (message.type.toLowerCase().startsWith("video")) {
+                    if (isMyMessage) {
+                        VIEW_TYPE_FILE_MESSAGE_VIDEO_ME
+                    } else {
+                        VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER
+                    }
+                } else {
+                    if (isMyMessage) {
+                        VIEW_TYPE_FILE_MESSAGE_ME
+                    } else {
+                        VIEW_TYPE_FILE_MESSAGE_OTHER
+                    }
+                }
+            }
+            is AdminMessage -> {
+                return VIEW_TYPE_ADMIN_MESSAGE
+            }
+            else -> return -1
+        }
+
+    }
 
     private open class BaseViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(message: BaseMessage, isNewDay: Boolean) {
@@ -335,7 +507,8 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             message: UserMessage,
             channel: GroupChannel?,
             isContinuous: Boolean,
-            isNewDay: Boolean
+            isNewDay: Boolean,
+            mOnItemMyMessageListener: OnItemMessageListener?
         ) {
             super.bind(message, isNewDay)
             binding.tvChatMessage.text = message.message
@@ -369,6 +542,10 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     binding.mLayoutUrlPreview.visibility = View.GONE
                     e.printStackTrace()
                 }
+            }
+            binding.root.setOnLongClickListener {
+                mOnItemMyMessageListener?.onItemMyMessageLongClicked(message, position)
+                true
             }
             binding.mLayoutMessageStatus.drawMessageStatus(channel, message)
         }
@@ -635,7 +812,6 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         BaseViewHolder(binding.root) {
         fun bind(
             message: FileMessage,
-            channel: GroupChannel?,
             isNewDay: Boolean,
             isContinuous: Boolean
         ) {
@@ -669,6 +845,14 @@ class ChatAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 )
             }
         }
+    }
+
+    fun setOnItemMessageListener(onItemMessageListener: OnItemMessageListener){
+        mOnItemMessageListener = onItemMessageListener
+    }
+
+    interface OnItemMessageListener {
+        fun onItemMyMessageLongClicked(userMessage: UserMessage, position: Int)
     }
 
     companion object {

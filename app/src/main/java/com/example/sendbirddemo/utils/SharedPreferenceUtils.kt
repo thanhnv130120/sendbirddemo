@@ -71,8 +71,8 @@ class SharedPreferenceUtils private constructor(context: Context) {
         return getBooleanValue(PREFERENCE_KEY_CONNECTED)
     }
 
-    fun setLastRead(value: Long) {
-        putLongValue(PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ, value)
+    fun setLastRead(groupChannelUrl: String, value: Long) {
+        putLongValue(PREFERENCE_KEY_GROUP_CHANNEL_LAST_READ + groupChannelUrl, value)
     }
 
     fun getLastRead(): Long {

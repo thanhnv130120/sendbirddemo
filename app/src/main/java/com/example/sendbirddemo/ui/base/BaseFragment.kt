@@ -40,6 +40,11 @@ abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
         initView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        registerConnectionHandler()
+    }
+
     protected fun hideKeyboard() {
         val view = requireActivity().currentFocus
         if (view != null) {

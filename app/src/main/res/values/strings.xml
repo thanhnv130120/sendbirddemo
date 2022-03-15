@@ -2,6 +2,7 @@
     <string name="app_name">sendbirddemo</string>
     <string name="group_channel_list_file_message_text">%1$s has uploaded a file.</string>
     <string name="typing_status">Someone is typing…</string>
+    <string name="cancel">Cancel</string>
 
     <string name="option_delete_message">Delete message</string>
     <string name="option_edit_message">Edit message</string>
@@ -20,4 +21,18 @@
 
     <string name="sendbird_error_with_code">Error: %d : %s</string>
     <string name="sendbird_error">Error : %s</string>
+
+    <!-- Group Channel List -->
+    <string name="create_group_channel">Create Group Channel</string>
+    <string name="member_list">Members</string>
+    <string name="invite_member">Invite members</string>
+    <string name="member_info"></string>
+    <string name="leave_channel">Leave Channel</string>
+    <string name="request_leave_channel">Leave channel %s ?</string>
+    <string name="set_push_off">Turn push notification OFF</string>
+    <string name="set_push_on">Turn push notification ON</string>
+    <string name="text_push_on">Push notifications have been turned ON</string>
+    <string name="text_push_off">Push notifications have been turned OFF</string>
+    <string name="action_leave_channel">Leave</string>
+    <string name="channel_option">Channel options</string>
 </resources>

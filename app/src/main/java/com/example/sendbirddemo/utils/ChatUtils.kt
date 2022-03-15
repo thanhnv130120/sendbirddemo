@@ -1,185 +1,253 @@
 package com.example.sendbirddemo.utils
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.net.Uri
+import android.widget.Toast
+import com.example.sendbirddemo.R
+import com.example.sendbirddemo.ui.chat.adapter.ChatAdapter
 import com.sendbird.android.*
 import com.sendbird.syncmanager.MessageCollection
 import com.sendbird.syncmanager.MessageFilter
-import com.sendbird.syncmanager.handler.MessageCollectionCreateHandler
-import com.sendbird.syncmanager.handler.MessageCollectionHandler
+import java.io.File
+import java.util.*
 
-class ChatUtils(val onGroupListener: OnGroupListener) {
+class ChatUtils {
 
     private var mMessageFilter = MessageFilter(BaseChannel.MessageTypeFilter.ALL, null, null)
-    private var mMessageCollection: MessageCollection? = null
-    private var mChannel: GroupChannel? = null
-
-    /**
-     * Creates a new Group Channel.
-     *
-     * Note that if you have not included empty channels in your GroupChannelListQuery,
-     * the channel will not be shown in the user's channel list until at least one message
-     * has been sent inside.
-     *
-     * @param userIds   The users to be members of the new channel.
-     * @param distinct  Whether the channel is unique for the selected members.
-     *                  If you attempt to create another Distinct channel with the same members,
-     *                  the existing channel instance will be returned.
-     */
-    fun createGroupChannel(userIds: List<String>, distinct: Boolean) {
-        GroupChannel.createChannelWithUserIds(
-            userIds,
-            distinct,
-            object : GroupChannel.GroupChannelCreateHandler {
-                override fun onResult(groupChannel: GroupChannel?, e: SendBirdException?) {
-                    if (e != null) {
-                        return
-                    }
-                    onGroupListener.onCreateGroupSuccess(groupChannel!!.url)
-                }
-
-            })
-    }
-
-    fun getListGroupChannel(): GroupChannelListQuery {
-        val query = GroupChannel.createMyGroupChannelListQuery()
-        query.limit = Constants.GROUP_CHANNEL_LIMIT
-        return query
-    }
-
-    fun inviteSelectedMembers(groupUrl: String, userIds: List<String>) {
-        GroupChannel.getChannel(groupUrl, object : GroupChannel.GroupChannelGetHandler {
-            override fun onResult(groupChannel: GroupChannel?, e: SendBirdException?) {
-                if (e != null) {
-                    return
-                }
-                groupChannel?.inviteWithUserIds(
-                    userIds,
-                    object : GroupChannel.GroupChannelInviteHandler {
-                        override fun onResult(e: SendBirdException?) {
-                            if (e != null) {
-                                return
-                            }
-                            onGroupListener.onInviteMembers()
-                        }
-
-                    })
-            }
-
-        })
-    }
-
-    fun leaveGroupChannel(groupUrl: String) {
-        GroupChannel.getChannel(groupUrl, object : GroupChannel.GroupChannelGetHandler {
-            override fun onResult(groupChannel: GroupChannel?, e: SendBirdException?) {
-                if (e != null) {
-                    return
-                }
-                groupChannel?.leave(object : GroupChannel.GroupChannelLeaveHandler {
-                    override fun onResult(e: SendBirdException?) {
-                        if (e != null) {
-                            return
-                        }
-                        onGroupListener.onLeaveGroupSuccess()
-                    }
-
-                })
-            }
-
-        })
-    }
 
     fun createMessageCollection(
-        groupUrl: String,
+        context: Context,
+        groupChannelUrl: String,
         mLastRead: Long,
-        mMessageCollectionHandler: MessageCollectionHandler
+        onCreateMessageCollection: OnCreateMessageCollection
     ) {
-        GroupChannel.getChannel(groupUrl, object : GroupChannel.GroupChannelGetHandler {
-            override fun onResult(groupChannel: GroupChannel?, e: SendBirdException?) {
-                if (e != null) {
-                    MessageCollection.create(
-                        groupUrl,
-                        mMessageFilter,
-                        mLastRead,
-                        object : MessageCollectionCreateHandler {
-                            override fun onResult(
-                                messageCollection: MessageCollection?,
-                                e: SendBirdException?
-                            ) {
-                                if (e == null) {
-                                    if (mMessageCollection != null) {
-                                        mMessageCollection!!.remove()
-                                    }
-                                    mMessageCollection = messageCollection
-                                    mMessageCollection?.setCollectionHandler(
-                                        mMessageCollectionHandler
-                                    )
-                                    mChannel = mMessageCollection?.channel
-                                    onGroupListener.onCreateMessageCollection(mChannel!!)
-                                }
-                            }
-
-                        })
-                } else {
-                    if (mMessageCollection != null) {
-                        mMessageCollection!!.remove()
+        GroupChannel.getChannel(groupChannelUrl) { groupChannel, e ->
+            if (e != null) {
+                MessageCollection.create(
+                    groupChannelUrl, mMessageFilter, mLastRead
+                ) { messageCollection, e ->
+                    if (e == null) {
+                        onCreateMessageCollection.onCreateMessageCollectionSucceed(
+                            groupChannel,
+                            messageCollection
+                        )
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.get_channel_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        onCreateMessageCollection.onCreateMessageCollectionFailed()
                     }
-                    mMessageCollection = MessageCollection(groupChannel, mMessageFilter, mLastRead)
-                    mMessageCollection!!.setCollectionHandler(mMessageCollectionHandler)
-                    mChannel = groupChannel
-                    onGroupListener.onCreateMessageCollection(mChannel!!)
                 }
+            } else {
+                onCreateMessageCollection.onCreateMessageCollectionSucceed(
+                    groupChannel,
+                    MessageCollection(groupChannel, mMessageFilter, mLastRead)
+                )
             }
-
-        })
+        }
     }
 
     @SuppressLint("StaticFieldLeak")
-    fun sendUserMessageWithUrl(text: String, url: String) {
-        if (mChannel == null) {
+    fun sendUserMessageWithUrl(
+        context: Context,
+        mGroupChannel: GroupChannel?,
+        mMessageCollection: MessageCollection?,
+        text: String,
+        url: String
+    ) {
+        if (mGroupChannel == null) {
             return
         }
         object : WebUtils.UrlPreviewAsyncTask() {
-            override fun onPostExecute(info: UrlPreviewInfo?) {
-                if (mChannel == null) {
-                    return
-                }
+            override fun onPostExecute(info: UrlPreviewInfo) {
                 var tempUserMessage: UserMessage? = null
                 val handler =
                     BaseChannel.SendUserMessageHandler { userMessage, e ->
                         if (e != null) {
-
+                            // Error!
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.send_message_error, e.code, e.message),
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
                         }
-                        mMessageCollection?.handleSendMessageResponse(userMessage, e)
+                        mMessageCollection!!.handleSendMessageResponse(userMessage, e)
                     }
                 tempUserMessage = try {
-                    val jsonString = info?.toJsonString()
-                    mChannel!!.sendUserMessage(text, jsonString, "url_preview", handler)
+                    // Sending a message with URL preview information and custom type.
+                    val jsonString: String = info.toJsonString()
+                    mGroupChannel.sendUserMessage(
+                        text,
+                        jsonString,
+                        ChatAdapter.URL_PREVIEW_CUSTOM_TYPE,
+                        handler
+                    )
                 } catch (e: Exception) {
                     // Sending a message without URL preview information.
-                    mChannel!!.sendUserMessage(text, handler)
+                    mGroupChannel.sendUserMessage(text, handler)
                 }
+                // Display a user message to RecyclerView
+                mMessageCollection?.appendMessage(tempUserMessage)
             }
         }.execute(url)
     }
 
-    fun sendUserMessage(text: String) {
-        if (mChannel == null) {
+    fun sendUserMessage(
+        context: Context,
+        mGroupChannel: GroupChannel?,
+        mMessageCollection: MessageCollection?,
+        text: String
+    ) {
+        if (mGroupChannel == null) {
             return
         }
-        var urls: List<String> = WebUtils.extractUrls(text)
+        val urls: List<String> = WebUtils.extractUrls(text)
         if (urls.isNotEmpty()) {
-            sendUserMessageWithUrl(text, urls[0])
+            sendUserMessageWithUrl(context, mGroupChannel, mMessageCollection, text, urls[0])
             return
         }
+        val pendingMessage: UserMessage = mGroupChannel.sendUserMessage(text,
+            BaseChannel.SendUserMessageHandler { userMessage, e ->
+                if (mMessageCollection != null) {
+                    mMessageCollection.handleSendMessageResponse(userMessage, e)
+                    mMessageCollection.fetchAllNextMessages(null)
+                }
+                if (e != null) {
+                    // Error!
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.send_message_error, e.code, e.message),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@SendUserMessageHandler
+                }
+            })
+        mMessageCollection?.appendMessage(pendingMessage)
 
     }
 
+    /**
+     * Sends a File Message containing an image file.
+     * Also requests thumbnails to be generated in specified sizes.
+     *
+     * @param uri The URI of the image, which in this case is received through an Intent request.
+     */
+    private fun sendFileWithThumbnail(
+        context: Context?,
+        mGroupChannel: GroupChannel?,
+        mMessageCollection: MessageCollection?,
+        uri: Uri,
+        onSendFileWithThumbnailListener: OnSendFileWithThumbnailListener
+    ) {
+        if (mGroupChannel == null) {
+            return
+        }
+        // Specify two dimensions of thumbnails to generate
+        val thumbnailSizes: MutableList<FileMessage.ThumbnailSize> = ArrayList()
+        thumbnailSizes.add(FileMessage.ThumbnailSize(240, 240))
+        thumbnailSizes.add(FileMessage.ThumbnailSize(320, 320))
+        val info: Hashtable<String, Any>? =
+            FileUtils.getFileInfo(context, uri)
+        if (info == null || info.isEmpty) {
+            Toast.makeText(context, context?.getString(R.string.wrong_file_info), Toast.LENGTH_LONG)
+                .show()
+            return
+        }
+        val name: String? = if (info.containsKey("name")) {
+            info["name"] as String?
+        } else {
+            "Sendbird File"
+        }
+        val path = info["path"] as String?
+        val file = File(path)
+        val mime = info["mime"] as String?
+        val size = info["size"] as Int
+        if (path == null || path == "") {
+            Toast.makeText(context, context?.getString(R.string.wrong_file_path), Toast.LENGTH_LONG)
+                .show()
+        } else {
+            val fileMessageHandler =
+                BaseChannel.SendFileMessageHandler { fileMessage, e ->
+                    mMessageCollection!!.handleSendMessageResponse(fileMessage, e)
+                    mMessageCollection.fetchAllNextMessages(null)
+                    if (e != null) {
+//                        Log.d("MyTag", "onSent: $activity")
+//                        if (activity != null) {
+//                            Toast.makeText(
+//                                activity,
+//                                getString(R.string.sendbird_error_with_code, e.code, e.message),
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        }
+                        onSendFileWithThumbnailListener.onSendFileWithThumbnailFailed()
+                    }
+                }
 
-    interface OnGroupListener {
-        fun onCreateGroupSuccess(groupUrl: String)
-        fun onInviteMembers()
-        fun onLeaveGroupSuccess()
-        fun onCreateMessageCollection(mChannel: GroupChannel)
+            // Send image with thumbnails in the specified dimensions
+            val tempFileMessage: FileMessage = mGroupChannel.sendFileMessage(
+                file,
+                name,
+                mime,
+                size,
+                "",
+                null,
+                thumbnailSizes,
+                fileMessageHandler
+            )
+//            mChatAdapter?.addTempFileMessageInfo(tempFileMessage, uri)
+            mMessageCollection?.appendMessage(tempFileMessage)
+            onSendFileWithThumbnailListener.onSendFileWithThumbnailSucceed(tempFileMessage, uri)
+        }
+    }
+
+    /**
+     * Deletes a message within the channel.
+     * Note that users can only delete messages sent by oneself.
+     *
+     * @param message The message to delete.
+     */
+    fun deleteMessage(
+        context: Context?,
+        mGroupChannel: GroupChannel?,
+        mMessageCollection: MessageCollection?,
+        message: BaseMessage
+    ) {
+        if (message.messageId == 0L) {
+            mMessageCollection!!.deleteMessage(message)
+        } else {
+            if (mGroupChannel == null) {
+                return
+            }
+            mGroupChannel.deleteMessage(message, BaseChannel.DeleteMessageHandler { e ->
+                if (e != null) {
+                    // Error!
+                    Toast.makeText(
+                        context,
+                        context?.getString(R.string.sendbird_error_with_code, e.code, e.message),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@DeleteMessageHandler
+                }
+                mMessageCollection!!.deleteMessage(message)
+            })
+        }
+    }
+
+    interface OnCreateMessageCollection {
+        fun onCreateMessageCollectionFailed()
+        fun onCreateMessageCollectionSucceed(
+            groupChannel: GroupChannel,
+            messageCollection: MessageCollection
+        )
+    }
+
+    interface OnSendFileWithThumbnailListener {
+        fun onSendFileWithThumbnailFailed()
+        fun onSendFileWithThumbnailSucceed(tempFileMessage: FileMessage, uri: Uri)
     }
 
 }

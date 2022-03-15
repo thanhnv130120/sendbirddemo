@@ -34,6 +34,7 @@ class GroupChannelListAdapter :
         ConcurrentHashMap<SimpleTarget<Bitmap>, GroupChannel>()
     private val mGroupChannelImageViewMap = ConcurrentHashMap<String, ImageView>()
     private val mGroupChannelBitmapMap = ConcurrentHashMap<String, SparseArray<Bitmap>>()
+    private var mItemClickListener: OnItemClickListener? = null
 
     fun insertChannels(channels: List<GroupChannel>, order: GroupChannelListQuery.Order) {
         for (newChannel in channels) {
@@ -242,6 +243,14 @@ class GroupChannelListAdapter :
                 binding.mLayoutGroupChannelTypingIndicator.visibility = View.GONE
             }
 
+            binding.root.setOnClickListener {
+                mItemClickListener?.onItemClick(groupChannel)
+            }
+            binding.root.setOnLongClickListener(View.OnLongClickListener {
+                mItemClickListener?.onItemLongClick(groupChannel)
+                return@OnLongClickListener true
+            })
+
         }
 
         private fun setChannelImage(
@@ -315,5 +324,14 @@ class GroupChannelListAdapter :
                 }
             }
         }
+    }
+
+    fun setOnItemClickListener(onItemClicked: OnItemClickListener) {
+        mItemClickListener = onItemClicked
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(channel: GroupChannel?)
+        fun onItemLongClick(channel: GroupChannel?)
     }
 }

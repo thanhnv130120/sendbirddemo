@@ -43,7 +43,7 @@
             <Button
                 android:id="@+id/btnSend"
                 android:text="SEND"
-                android:textSize="14dp"
+                android:textSize="10dp"
                 android:textColor="@drawable/selector_btn_send"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
@@ -97,7 +97,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/text_group_chat_new_message"
+                android:id="@+id/tvChatNewMessage"
                 android:text="STRING"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="4dp"

@@ -8,11 +8,11 @@
     </data>
 
     <RelativeLayout
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:layout_marginBottom="8dp">
+        android:paddingRight="8dp">
 
         <include
             android:id="@+id/mLayoutChatInfo"
@@ -30,13 +30,13 @@
                 android:id="@+id/mLayoutChatFileMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/group_chat_file_background"
                 android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="8dp"
+                android:background="@drawable/group_chat_file_background"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="12dp"
-                android:layout_alignParentRight="true"
-                android:layout_marginLeft="8dp">
+                android:padding="12dp">
 
                 <ImageView
                     android:layout_width="25dp"
@@ -48,8 +48,8 @@
                     android:id="@+id/tvFileName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="12dp"
                     android:layout_marginStart="12dp"
+                    android:layout_marginLeft="12dp"
                     android:ellipsize="middle"
                     android:singleLine="true"
                     android:text="File Name.xls" />
@@ -57,16 +57,16 @@
                 <View
                     android:layout_width="2dp"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="12dp"
                     android:layout_marginStart="12dp"
+                    android:layout_marginLeft="12dp"
                     android:background="#d8d8d8" />
 
                 <Button
                     android:id="@+id/btnDownload"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
-                    android:layout_marginLeft="7dp"
                     android:layout_marginStart="7dp"
+                    android:layout_marginLeft="7dp"
                     android:background="@drawable/ic_file_message_download" />
 
             </LinearLayout>
@@ -83,10 +83,10 @@
 
             <com.example.sendbirddemo.widget.MessageStatusView
                 android:id="@+id/mLayoutMessageStatus"
-                android:layout_above="@id/tvChatTime"
-                android:layout_alignEnd="@id/tvChatTime"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_above="@id/tvChatTime"
+                android:layout_alignEnd="@id/tvChatTime" />
 
         </RelativeLayout>
     </RelativeLayout>

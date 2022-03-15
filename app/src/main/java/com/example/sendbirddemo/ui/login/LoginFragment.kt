@@ -1,11 +1,10 @@
 package com.example.sendbirddemo.ui.login
 
-import android.util.Log
 import android.view.View
 import androidx.navigation.fragment.findNavController
-import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.FragmentLoginBinding
+import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.utils.ConnectionUtils
 import com.example.sendbirddemo.utils.SharedPreferenceUtils
 import com.example.sendbirddemo.utils.SyncManagerUtils
@@ -56,7 +55,6 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(), View.OnClickListener
                                     findNavController().navigate(R.id.action_global_homeFragment)
                                 })
                         } else {
-                            Log.d("TAG", "onConnectFailed: ")
                             SharedPreferenceUtils.getInstance(requireContext())?.setConnected(false)
                         }
                     }
