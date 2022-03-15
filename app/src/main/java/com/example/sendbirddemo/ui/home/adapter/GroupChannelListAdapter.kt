@@ -308,6 +308,7 @@ class GroupChannelListAdapter :
                             .load(members[index].profileUrl)
                             .apply(myOptions)
                             .into(simpleTarget)
+                        Log.d("TAG", "setChannelImage: ${members[index].profileUrl}")
                     }
                 } else {
                     val bitmapSparseArray: SparseArray<Bitmap>? =
@@ -320,6 +321,7 @@ class GroupChannelListAdapter :
                                 multiImageView.addImage(bitmapSparseArray[i])
                             }
                         }
+                        Log.d("TAG", "setChannelImage: ${mGroupChannelNumImageMap[channel.url]}")
                     }
                 }
             }

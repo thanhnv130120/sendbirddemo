@@ -16,7 +16,7 @@ class ConnectionUtils {
         return SharedPreferenceUtils.getInstance(context)?.getConnected()!!
     }
 
-    fun connectToSendBird(
+    fun connect(
         context: Context,
         userID: String,
         nickname: String,

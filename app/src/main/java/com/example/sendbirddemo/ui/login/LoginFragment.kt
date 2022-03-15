@@ -1,5 +1,6 @@
 package com.example.sendbirddemo.ui.login
 
+import android.util.Log
 import android.view.View
 import androidx.navigation.fragment.findNavController
 import com.example.sendbirddemo.R
@@ -33,16 +34,16 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(), View.OnClickListener
         if (p0 == binding!!.btnConnect) {
             var userId = binding!!.edtUserId.text.toString()
             userId = userId.replace("\\s".toRegex(), "")
+            val userNickname = binding!!.edtNickname.text.toString()
             SharedPreferenceUtils.getInstance(requireContext())?.setUserId(userId)
-            SharedPreferenceUtils.getInstance(requireContext())
-                ?.setNickname(binding!!.edtNickname.text.toString())
-            connectionUtils.connectToSendBird(
+            SharedPreferenceUtils.getInstance(requireContext())?.setNickname(userNickname)
+            connectionUtils.connect(
                 requireContext(),
                 userId,
-                binding!!.edtNickname.text.toString(),
+                userNickname,
                 object : SendBird.ConnectHandler {
-                    override fun onConnected(p0: User?, p1: SendBirdException?) {
-                        if (p1 == null) {
+                    override fun onConnected(user: User?, e: SendBirdException?) {
+                        if (e == null) {
                             SyncManagerUtils.setup(requireContext(),
                                 SharedPreferenceUtils.getInstance(requireContext())?.getUserId()!!,
                                 CompletionHandler { e ->
@@ -54,6 +55,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(), View.OnClickListener
                                         ?.setConnected(true)
                                     findNavController().navigate(R.id.action_global_homeFragment)
                                 })
+                            Log.d("TAG", "onConnected: $user")
                         } else {
                             SharedPreferenceUtils.getInstance(requireContext())?.setConnected(false)
                         }
