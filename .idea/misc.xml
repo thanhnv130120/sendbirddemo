@@ -32,6 +32,11 @@
         <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/list_item_group_chat_user_other.xml" value="0.36666666666666664" />
         <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/partial_group_chat_info.xml" value="0.36666666666666664" />
         <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/view_message_status.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/fragment_chat.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/fragment_invite_member.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/fragment_member_list.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_user.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/menu/menu_group_chat.xml" value="0.36666666666666664" />
       </map>
     </option>
   </component>

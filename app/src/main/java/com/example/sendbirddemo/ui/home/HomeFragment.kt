@@ -102,7 +102,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     fun connect() {
         if (SendBird.getConnectionState() != SendBird.ConnectionState.OPEN) {
-            connectionUtils.connectToSendBird(
+            connectionUtils.connect(
                 requireContext(),
                 SharedPreferenceUtils.getInstance(requireContext())?.getUserId()!!,
                 SharedPreferenceUtils.getInstance(requireContext())?.getNickname()!!

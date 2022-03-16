@@ -1,7 +1,6 @@
 package com.example.sendbirddemo.utils
 
 import android.content.Context
-import com.sendbird.android.ConnectionManager
 import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ConnectHandler
 import com.sendbird.android.SendBird.DisconnectHandler

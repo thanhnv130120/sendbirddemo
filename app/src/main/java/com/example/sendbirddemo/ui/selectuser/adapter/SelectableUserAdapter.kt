@@ -21,8 +21,8 @@ class SelectableUserAdapter :
         notifyDataSetChanged()
     }
 
-    fun addLast(user: User?) {
-        users.add(user!!)
+    fun addLast(user: User) {
+        users.add(user)
         notifyDataSetChanged()
     }
 

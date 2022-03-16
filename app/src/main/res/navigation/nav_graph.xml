@@ -40,6 +40,23 @@
         android:label="SplashFragment"
         tools:layout="@layout/fragment_splash" />
 
+    <fragment
+        android:id="@+id/inviteMemberFragment"
+        android:name="com.example.sendbirddemo.ui.invite.InviteMemberFragment"
+        android:label="InviteMemberFragment"
+        tools:layout="@layout/fragment_invite_member">
+        <argument
+            android:name="groupChannelUrl"
+            android:defaultValue=""
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/memberListFragment"
+        android:name="com.example.sendbirddemo.ui.member.MemberListFragment"
+        android:label="MemberListFragment"
+        tools:layout="@layout/fragment_member_list" />
+
     <action
         android:id="@+id/action_global_homeFragment"
         app:destination="@id/homeFragment" />
@@ -55,5 +72,12 @@
     <action
         android:id="@+id/action_global_loginFragment"
         app:destination="@id/loginFragment" />
+    <action
+        android:id="@+id/action_global_inviteMemberFragment"
+        app:destination="@id/inviteMemberFragment" />
+    <action
+        android:id="@+id/action_global_memberListFragment"
+        app:destination="@id/memberListFragment" />
+
 
 </navigation>

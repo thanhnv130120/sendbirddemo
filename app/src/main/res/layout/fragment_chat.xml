@@ -13,51 +13,51 @@
 
         <LinearLayout
             android:id="@+id/mLayoutInputChat"
-            android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:minHeight="48dp">
+            android:layout_alignParentBottom="true"
+            android:minHeight="48dp"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/btnUpload"
-                app:srcCompat="@drawable/ic_add_black"
-                android:background="?attr/selectableItemBackground"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:layout_gravity="bottom"
+                android:background="?attr/selectableItemBackground"
                 android:contentDescription="Upload file"
-                android:layout_gravity="bottom"/>
+                app:srcCompat="@drawable/ic_add_black" />
 
             <EditText
                 android:id="@+id/edtInputChat"
-                android:hint="Enter message"
-                android:background="@android:color/transparent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
-                android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:maxLines="6"/>
+                android:background="@android:color/transparent"
+                android:hint="Enter message"
+                android:maxLines="6" />
 
             <Button
                 android:id="@+id/btnSend"
-                android:text="SEND"
-                android:textSize="10dp"
-                android:textColor="@drawable/selector_btn_send"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
                 android:layout_width="64dp"
                 android:layout_height="48dp"
+                android:layout_gravity="bottom"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
                 android:gravity="center"
-                android:layout_gravity="bottom" />
+                android:text="SEND"
+                android:textColor="@drawable/selector_btn_send"
+                android:textSize="10dp" />
         </LinearLayout>
 
         <View
-            android:layout_above="@id/mLayoutInputChat"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="#DfDfDf"/>
+            android:layout_above="@id/mLayoutInputChat"
+            android:background="#DfDfDf" />
 
         <LinearLayout
             android:id="@+id/mLayoutListMessage"
@@ -71,8 +71,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:paddingBottom="4dp"
                 android:clipToPadding="false"
+                android:paddingBottom="4dp"
                 android:scrollbars="vertical">
 
             </androidx.recyclerview.widget.RecyclerView>
@@ -87,26 +87,41 @@
 
                 <TextView
                     android:id="@+id/tvCurrentEvent"
-                    android:text="Terry and Harry are typing"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"/>
+                    android:layout_gravity="center_vertical"
+                    android:text="Terry and Harry are typing" />
 
             </LinearLayout>
 
             <TextView
+                android:id="@+id/tvChatNewMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvChatNewMessage"
-                android:text="STRING"
-                android:layout_marginBottom="8dp"
-                android:layout_marginTop="4dp"
                 android:layout_marginLeft="16dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="16dp"
+                android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:visibility="gone"/>
+                android:text="STRING"
+                android:visibility="gone" />
 
         </LinearLayout>
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fitsSystemWindows="true">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/mToolbarInviteMember"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:theme="@style/ToolBarStyle">
+
+            </androidx.appcompat.widget.Toolbar>
+
+        </com.google.android.material.appbar.AppBarLayout>
 
     </RelativeLayout>
 </layout>

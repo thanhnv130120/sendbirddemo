@@ -4,9 +4,14 @@ import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +22,7 @@ import com.example.sendbirddemo.ui.chat.adapter.ChatAdapter
 import com.example.sendbirddemo.utils.ChatUtils
 import com.example.sendbirddemo.utils.SharedPreferenceUtils
 import com.sendbird.android.*
-import com.sendbird.android.BaseChannel.*
+import com.sendbird.android.BaseChannel.UpdateUserMessageHandler
 import com.sendbird.android.SendBird.ChannelHandler
 import com.sendbird.android.SendBird.ConnectionHandler
 import com.sendbird.syncmanager.FailedMessageEventActionReason
@@ -25,7 +30,6 @@ import com.sendbird.syncmanager.MessageCollection
 import com.sendbird.syncmanager.MessageEventAction
 import com.sendbird.syncmanager.handler.CompletionHandler
 import com.sendbird.syncmanager.handler.MessageCollectionHandler
-import java.util.*
 
 class ChatFragment : BaseFragment<FragmentChatBinding>() {
 
@@ -45,6 +49,8 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
     override fun getLayoutID() = R.layout.fragment_chat
 
     override fun initView() {
+        (activity as AppCompatActivity).setSupportActionBar(binding!!.mToolbarInviteMember)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         mLastRead = SharedPreferenceUtils.getInstance(requireContext())?.getLastRead()!!
         mChatAdapter = ChatAdapter(requireContext())
 
@@ -128,6 +134,7 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
     }
 
     override fun initViewModel() {
+        setHasOptionsMenu(true)
         mGroupChannelUrl = args.groupChannelUrl
     }
 
@@ -199,6 +206,30 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
         if (mMessageCollection != null) {
             mMessageCollection!!.setCollectionHandler(null)
             mMessageCollection!!.remove()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_group_chat, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_group_channel_invite -> {
+                val action = ChatFragmentDirections.actionGlobalInviteMemberFragment().setGroupChannelUrl(mGroupChannelUrl!!)
+                findNavController().navigate(action)
+                true
+            }
+            R.id.action_group_channel_view_members -> {
+                Log.d("TAG", "onOptionsItemSelected: 2")
+                true
+            }
+            android.R.id.home -> {
+                findNavController().navigateUp()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
