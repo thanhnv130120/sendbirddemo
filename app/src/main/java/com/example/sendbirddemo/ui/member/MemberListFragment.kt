@@ -6,7 +6,10 @@ import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.FragmentMemberListBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.ui.member.adapter.MemberListAdapter
+import com.example.sendbirddemo.utils.Constants
 import com.example.sendbirddemo.utils.SyncManagerUtils
+import com.sendbird.android.BaseChannel
+import com.sendbird.android.GroupChannel
 import com.sendbird.android.Member
 
 class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
@@ -15,11 +18,13 @@ class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
     private val mMemberListAdapter: MemberListAdapter by lazy {
         MemberListAdapter()
     }
+    private var mGroupChannel: GroupChannel? = null
 
     override fun getLayoutID() = R.layout.fragment_member_list
 
     override fun initView() {
-
+        mGroupChannel = BaseChannel.buildFromSerializedData(arguments?.getByteArray(Constants.GROUP_CHANNEL_KEY)) as GroupChannel
+        setMemberList(mGroupChannel!!.members)
         setUpRecyclerView()
     }
 
@@ -51,6 +56,6 @@ class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
                 sortedUserList.add(member)
             }
         }
-        mMemberListAdapter.setUserList(sortedUserList)
+        mMemberListAdapter.setUserList(sortedUserList.toMutableList())
     }
 }

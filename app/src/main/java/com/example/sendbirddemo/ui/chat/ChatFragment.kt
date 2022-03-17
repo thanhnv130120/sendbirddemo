@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +21,7 @@ import com.example.sendbirddemo.databinding.FragmentChatBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.ui.chat.adapter.ChatAdapter
 import com.example.sendbirddemo.utils.ChatUtils
+import com.example.sendbirddemo.utils.Constants
 import com.example.sendbirddemo.utils.SharedPreferenceUtils
 import com.sendbird.android.*
 import com.sendbird.android.BaseChannel.UpdateUserMessageHandler
@@ -30,6 +32,8 @@ import com.sendbird.syncmanager.MessageCollection
 import com.sendbird.syncmanager.MessageEventAction
 import com.sendbird.syncmanager.handler.CompletionHandler
 import com.sendbird.syncmanager.handler.MessageCollectionHandler
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 class ChatFragment : BaseFragment<FragmentChatBinding>() {
 
@@ -217,12 +221,14 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_group_channel_invite -> {
-                val action = ChatFragmentDirections.actionGlobalInviteMemberFragment().setGroupChannelUrl(mGroupChannelUrl!!)
+                val action = ChatFragmentDirections.actionGlobalInviteMemberFragment()
+                    .setGroupChannelUrl(mGroupChannelUrl!!)
                 findNavController().navigate(action)
                 true
             }
             R.id.action_group_channel_view_members -> {
-                Log.d("TAG", "onOptionsItemSelected: 2")
+                val bundle = bundleOf(Constants.GROUP_CHANNEL_KEY to mGroupChannel!!.serialize())
+                findNavController().navigate(R.id.action_global_memberListFragment, bundle)
                 true
             }
             android.R.id.home -> {

@@ -1,13 +1,10 @@
 package com.example.sendbirddemo.ui.member.adapter
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.sendbirddemo.databinding.ItemRcSelectableUserBinding
 import com.example.sendbirddemo.databinding.ListItemUserBinding
-import com.sendbird.android.Member
 import com.sendbird.android.SendBird
 import com.sendbird.android.User
 
@@ -15,7 +12,7 @@ class MemberListAdapter : RecyclerView.Adapter<MemberListAdapter.MemberListViewH
 
     private val mUsers = mutableListOf<User>()
 
-    fun setUserList(users: MutableList<@JvmSuppressWildcards User>) {
+    fun setUserList(users: MutableList<User>) {
         mUsers.clear()
         mUsers.addAll(users)
         notifyDataSetChanged()
