@@ -1,7 +1,9 @@
 package com.example.sendbirddemo.ui.invite
 
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -46,6 +48,8 @@ class InviteMemberFragment : BaseFragment<FragmentInviteMemberBinding>(), View.O
     override fun getLayoutID() = R.layout.fragment_invite_member
 
     override fun initView() {
+        (activity as AppCompatActivity).setSupportActionBar(binding!!.mToolbarInviteMember)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         if (SendBird.getConnectionState() == SendBird.ConnectionState.OPEN) {
             setUpRecyclerView()
             loadInitialUserList(15)
@@ -69,7 +73,15 @@ class InviteMemberFragment : BaseFragment<FragmentInviteMemberBinding>(), View.O
     }
 
     override fun initViewModel() {
+        setHasOptionsMenu(true)
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home){
+            findNavController().navigateUp()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onClick(p0: View?) {

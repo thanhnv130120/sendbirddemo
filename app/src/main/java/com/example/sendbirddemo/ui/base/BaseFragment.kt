@@ -54,7 +54,7 @@ abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
         }
     }
 
-    fun registerConnectionHandler() {
+    private fun registerConnectionHandler() {
         SendBird.addConnectionHandler(getConnectionHandlerId(), object : ConnectionHandler {
             override fun onReconnectStarted() {
                 SendBirdSyncManager.getInstance().pauseSync()
@@ -71,6 +71,11 @@ abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
     abstract fun getLayoutID(): Int
     abstract fun initView()
     abstract fun initViewModel()
+
+    override fun onPause() {
+        super.onPause()
+        SendBird.removeChannelHandler(getConnectionHandlerId())
+    }
 
     override fun onDestroy() {
         super.onDestroy()

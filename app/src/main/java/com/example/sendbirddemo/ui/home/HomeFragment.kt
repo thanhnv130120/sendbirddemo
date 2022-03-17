@@ -1,6 +1,5 @@
 package com.example.sendbirddemo.ui.home
 
-import android.content.DialogInterface
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
@@ -11,11 +10,13 @@ import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.FragmentHomeBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.ui.home.adapter.GroupChannelListAdapter
-import com.example.sendbirddemo.utils.ChatUtils
 import com.example.sendbirddemo.utils.ConnectionUtils
 import com.example.sendbirddemo.utils.GroupUtils
 import com.example.sendbirddemo.utils.SharedPreferenceUtils
-import com.sendbird.android.*
+import com.sendbird.android.BaseChannel
+import com.sendbird.android.BaseMessage
+import com.sendbird.android.GroupChannel
+import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ChannelHandler
 import com.sendbird.syncmanager.ChannelCollection
 import com.sendbird.syncmanager.ChannelEventAction
@@ -77,6 +78,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                     baseChannel: BaseChannel,
                     baseMessage: BaseMessage
                 ) {
+
                 }
 
                 override fun onChannelChanged(channel: BaseChannel) {}
@@ -221,10 +223,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     private var mChannelCollectionHandler =
         ChannelCollectionHandler { channelCollection, list, channelEventAction ->
-            Log.d(
-                "SyncManager",
-                "onChannelEvent: size = " + list.size + ", action = " + channelEventAction
-            )
             if (activity == null) {
                 return@ChannelCollectionHandler
             }
@@ -255,19 +253,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                         mGroupChannelListAdapter?.clearMap()
                         mGroupChannelListAdapter?.removeGroupChannels(list)
                     }
-                    ChannelEventAction.CLEAR -> {
+                    else -> {
                         mGroupChannelListAdapter?.clearMap()
                         mGroupChannelListAdapter?.clearGroupChannelList()
-                    }
-                    else -> {
-                        Log.d("TAG", ": ERROR")
                     }
                 }
             }
         }
 
     override fun getConnectionHandlerId(): String {
-        return "CONNECTION_HANDLER_MAIN_ACTIVITY"
+        return "CONNECTION_HANDLER_GROUP_CHANNEL_ACTIVITY"
     }
 
     companion object {

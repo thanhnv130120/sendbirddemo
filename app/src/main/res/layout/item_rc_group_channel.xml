@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/mLayoutGroupChannelTopic"
-            android:layout_alignLeft="@id/mLayoutGroupChannelTopic"
+            android:layout_alignStart="@id/mLayoutGroupChannelTopic"
             android:orientation="horizontal">
 
 

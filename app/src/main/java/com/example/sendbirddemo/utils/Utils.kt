@@ -1,9 +1,16 @@
 package com.example.sendbirddemo.utils
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.os.Build
+import android.os.Environment
 import android.widget.ImageView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -11,12 +18,59 @@ import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.BitmapImageViewTarget
+import com.example.sendbirddemo.R
 import com.example.sendbirddemo.utils.SyncManagerUtils.getMyUserId
 import com.sendbird.android.GroupChannel
 import java.text.SimpleDateFormat
 import java.util.*
 
 object Utils {
+
+    fun isAndroidR(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+    }
+
+    fun hasShowRequestPermissionRationale(
+        context: Context?,
+        vararg permissions: String?
+    ): Boolean {
+        if (context != null) {
+            for (permission in permissions) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(
+                        (context as Activity?)!!,
+                        permission!!
+                    )
+                ) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    fun storagePermissionGrant(context: Context): Boolean {
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                Environment.isExternalStorageManager()
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED)
+            }
+            else -> {
+                (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED) and
+                        (ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        ) == PackageManager.PERMISSION_GRANTED)
+            }
+        }
+    }
 
     fun getGroupChannelTitle(context: Context, channel: GroupChannel): String? {
         val members = channel.members
@@ -117,14 +171,14 @@ object Utils {
     /**
      * Displays an image from a URL in an ImageView.
      */
-    fun displayImageFromUrl(
+    private fun displayImageFromUrl(
         context: Context?, url: String?,
-        imageView: ImageView?, placeholderDrawable: Drawable?, listener: RequestListener<Drawable>?
+        imageView: ImageView?, placeholderDrawable: Int?, listener: RequestListener<Drawable>?
     ) {
         val myOptions = RequestOptions()
             .dontAnimate()
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-            .placeholder(placeholderDrawable)
+            .placeholder(placeholderDrawable!!)
         if (listener != null) {
             Glide.with(context!!)
                 .load(url)
@@ -151,6 +205,7 @@ object Utils {
             .asBitmap()
             .apply(myOptions)
             .load(url)
+            .placeholder(R.drawable.avatar_default)
             .into(object : BitmapImageViewTarget(imageView) {
                 override fun setResource(resource: Bitmap?) {
                     val circularBitmapDrawable =
@@ -169,7 +224,7 @@ object Utils {
             context,
             url,
             imageView,
-            null,
+            R.drawable.avatar_default,
             null
         )
     }
@@ -210,23 +265,23 @@ object Utils {
         imageView: ImageView?,
         thumbnailUrl: String?
     ) {
-        displayGifImageFromUrl(context, url, imageView, thumbnailUrl, null)
+        displayGifImageFromUrl(context, url, imageView, thumbnailUrl, R.drawable.avatar_default)
     }
 
     /**
      * Displays an GIF image from a URL in an ImageView.
      */
-    fun displayGifImageFromUrl(
+    private fun displayGifImageFromUrl(
         context: Context?,
         url: String?,
         imageView: ImageView?,
         thumbnailUrl: String?,
-        placeholderDrawable: Drawable?
+        placeholderDrawable: Int?
     ) {
         val myOptions = RequestOptions()
             .dontAnimate()
             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-            .placeholder(placeholderDrawable)
+            .placeholder(placeholderDrawable!!)
         if (thumbnailUrl != null) {
             Glide.with(context!!)
                 .asGif()

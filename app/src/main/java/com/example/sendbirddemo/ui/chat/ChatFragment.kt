@@ -1,5 +1,8 @@
 package com.example.sendbirddemo.ui.chat
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +12,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
@@ -18,11 +23,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.FragmentChatBinding
-import com.example.sendbirddemo.ui.base.BaseFragment
+import com.example.sendbirddemo.ui.base.BasePermissionRequestFragment
 import com.example.sendbirddemo.ui.chat.adapter.ChatAdapter
 import com.example.sendbirddemo.utils.ChatUtils
 import com.example.sendbirddemo.utils.Constants
 import com.example.sendbirddemo.utils.SharedPreferenceUtils
+import com.example.sendbirddemo.utils.Utils
 import com.sendbird.android.*
 import com.sendbird.android.BaseChannel.UpdateUserMessageHandler
 import com.sendbird.android.SendBird.ChannelHandler
@@ -32,10 +38,8 @@ import com.sendbird.syncmanager.MessageCollection
 import com.sendbird.syncmanager.MessageEventAction
 import com.sendbird.syncmanager.handler.CompletionHandler
 import com.sendbird.syncmanager.handler.MessageCollectionHandler
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 
-class ChatFragment : BaseFragment<FragmentChatBinding>() {
+class ChatFragment : BasePermissionRequestFragment<FragmentChatBinding>() {
 
     private val args: ChatFragmentArgs by navArgs()
     private var mGroupChannel: GroupChannel? = null
@@ -60,7 +64,13 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
 
         binding!!.edtInputChat.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                if (s.isEmpty()){
+                    setTypingStatus(false)
+                } else {
+                    setTypingStatus(true)
+                }
+            }
             override fun afterTextChanged(s: Editable) {
                 binding!!.btnSend.isEnabled = s.isNotEmpty()
             }
@@ -100,7 +110,15 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
         }
 
         binding!!.btnUpload.setOnClickListener {
-
+            if (Utils.storagePermissionGrant(requireContext())) {
+                val intent = Intent()
+                intent.type = "*/*"
+                intent.action = Intent.ACTION_GET_CONTENT
+                getMedia.launch(intent)
+                SendBird.setAutoBackgroundDetection(false)
+            } else {
+                requestPermission()
+            }
         }
 
         setUpRecyclerView()
@@ -205,7 +223,6 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         // Save messages to cache.
         if (mMessageCollection != null) {
             mMessageCollection!!.setCollectionHandler(null)
@@ -238,6 +255,37 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    private var getMedia =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent = result.data
+                chatUtils.sendFileWithThumbnail(
+                    requireContext(),
+                    mGroupChannel,
+                    mMessageCollection,
+                    intent?.data!!,
+                    object : ChatUtils.OnSendFileWithThumbnailListener {
+                        override fun onSendFileWithThumbnailFailed() {
+                            if (activity != null) {
+                                Toast.makeText(
+                                    activity,
+                                    getString(R.string.sendbird_error_with_code),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+
+                        override fun onSendFileWithThumbnailSucceed(
+                            tempFileMessage: FileMessage,
+                            uri: Uri
+                        ) {
+                            mChatAdapter?.addTempFileMessageInfo(tempFileMessage, uri)
+                        }
+
+                    })
+            }
+        }
 
     private fun setupClickedListener() {
         mChatAdapter?.setOnItemMessageListener(object : ChatAdapter.OnItemMessageListener {
@@ -370,7 +418,7 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
                 binding!!.edtInputChat.requestFocus()
                 binding!!.edtInputChat.postDelayed(Runnable {
                     binding!!.rcChat.postDelayed(
-                        Runnable { binding!!.rcChat.scrollToPosition(position!!) },
+                        { binding!!.rcChat.scrollToPosition(position!!) },
                         500
                     )
                 }, 100)
@@ -579,5 +627,10 @@ class ChatFragment : BaseFragment<FragmentChatBinding>() {
         const val STATE_EDIT = 1
         private const val CONNECTION_HANDLER_ID = "CONNECTION_HANDLER_GROUP_CHAT"
         private const val CHANNEL_HANDLER_ID = "CHANNEL_HANDLER_GROUP_CHANNEL_CHAT"
+        private const val INTENT_REQUEST_CHOOSE_MEDIA = 301
+    }
+
+    override fun setupWhenPermissionGranted() {
+
     }
 }

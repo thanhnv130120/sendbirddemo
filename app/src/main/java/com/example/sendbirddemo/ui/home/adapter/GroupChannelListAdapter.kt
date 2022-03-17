@@ -2,7 +2,6 @@ package com.example.sendbirddemo.ui.home.adapter
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
@@ -107,7 +106,6 @@ class GroupChannelListAdapter :
                 mGroupChannelList.remove(mGroupChannelList[i])
                 mGroupChannelList.add(0, channel)
                 notifyDataSetChanged()
-                Log.v(GroupChannelListAdapter::class.java.simpleName, "Channel replaced.")
                 return
             }
         }
@@ -126,7 +124,6 @@ class GroupChannelListAdapter :
     }
 
     fun clearMap() {
-        mGroupChannelList.clear()
         mSimpleTargetIndexMap.clear()
         mSimpleTargetGroupChannelMap.clear()
         mGroupChannelImageViewMap.clear()
@@ -209,12 +206,6 @@ class GroupChannelListAdapter :
              * A typing indicator is basically just three dots contained within the layout
              * that animates. The animation is implemented in the {@link TypingIndicator#animate() class}
              */
-
-            /*
-             * Set up the typing indicator.
-             * A typing indicator is basically just three dots contained within the layout
-             * that animates. The animation is implemented in the {@link TypingIndicator#animate() class}
-             */
             val indicatorImages = ArrayList<ImageView>()
             indicatorImages.add(binding.mLayoutGroupChannelTypingIndicator.typing_indicator_dot_1 as ImageView)
             indicatorImages.add(binding.mLayoutGroupChannelTypingIndicator.typing_indicator_dot_2 as ImageView)
@@ -222,12 +213,6 @@ class GroupChannelListAdapter :
 
             val indicator = TypingIndicator(indicatorImages, 600)
             indicator.animate()
-
-            // debug
-//            typingIndicatorContainer.setVisibility(View.VISIBLE);
-//            lastMessageText.setText(("Someone is typing"));
-
-            // If someone in the channel is typing, display the typing indicator.
 
             // debug
 //            typingIndicatorContainer.setVisibility(View.VISIBLE);
@@ -308,7 +293,6 @@ class GroupChannelListAdapter :
                             .load(members[index].profileUrl)
                             .apply(myOptions)
                             .into(simpleTarget)
-                        Log.d("TAG", "setChannelImage: ${members[index].profileUrl}")
                     }
                 } else {
                     val bitmapSparseArray: SparseArray<Bitmap>? =
@@ -321,7 +305,6 @@ class GroupChannelListAdapter :
                                 multiImageView.addImage(bitmapSparseArray[i])
                             }
                         }
-                        Log.d("TAG", "setChannelImage: ${mGroupChannelNumImageMap[channel.url]}")
                     }
                 }
             }

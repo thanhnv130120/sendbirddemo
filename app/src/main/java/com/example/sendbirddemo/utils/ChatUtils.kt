@@ -136,7 +136,7 @@ class ChatUtils {
      *
      * @param uri The URI of the image, which in this case is received through an Intent request.
      */
-    private fun sendFileWithThumbnail(
+    fun sendFileWithThumbnail(
         context: Context?,
         mGroupChannel: GroupChannel?,
         mMessageCollection: MessageCollection?,
@@ -175,14 +175,6 @@ class ChatUtils {
                     mMessageCollection!!.handleSendMessageResponse(fileMessage, e)
                     mMessageCollection.fetchAllNextMessages(null)
                     if (e != null) {
-//                        Log.d("MyTag", "onSent: $activity")
-//                        if (activity != null) {
-//                            Toast.makeText(
-//                                activity,
-//                                getString(R.string.sendbird_error_with_code, e.code, e.message),
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
                         onSendFileWithThumbnailListener.onSendFileWithThumbnailFailed()
                     }
                 }

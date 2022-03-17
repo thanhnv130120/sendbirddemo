@@ -1,5 +1,8 @@
 package com.example.sendbirddemo.ui.member
 
+import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.sendbirddemo.R
@@ -23,13 +26,24 @@ class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
     override fun getLayoutID() = R.layout.fragment_member_list
 
     override fun initView() {
-        mGroupChannel = BaseChannel.buildFromSerializedData(arguments?.getByteArray(Constants.GROUP_CHANNEL_KEY)) as GroupChannel
+        (activity as AppCompatActivity).setSupportActionBar(binding!!.mToolbarMemberList)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        mGroupChannel =
+            BaseChannel.buildFromSerializedData(arguments?.getByteArray(Constants.GROUP_CHANNEL_KEY)) as GroupChannel
         setMemberList(mGroupChannel!!.members)
         setUpRecyclerView()
     }
 
     override fun initViewModel() {
+        setHasOptionsMenu(true)
+    }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            findNavController().navigateUp()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun setUpRecyclerView() {
