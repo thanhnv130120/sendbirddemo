@@ -9,12 +9,16 @@ import android.view.inputmethod.InputMethodManager
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import com.example.sendbirddemo.utils.ConnectionUtils
 import com.sendbird.android.SendBird
 import com.sendbird.android.SendBird.ConnectionHandler
 import com.sendbird.syncmanager.SendBirdSyncManager
 
 abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
     protected var binding: V? = null
+    private val connectionUtils: ConnectionUtils by lazy {
+        ConnectionUtils()
+    }
 
     protected open fun getConnectionHandlerId(): String {
         return "CONNECTION_HANDLER_MAIN_ACTIVITY"
@@ -42,7 +46,7 @@ abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        registerConnectionHandler()
+        connectionUtils.registerConnectionHandler(getConnectionHandlerId())
     }
 
     protected fun hideKeyboard() {
@@ -52,20 +56,6 @@ abstract class BaseFragment<V : ViewDataBinding> : Fragment() {
                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
-    }
-
-    private fun registerConnectionHandler() {
-        SendBird.addConnectionHandler(getConnectionHandlerId(), object : ConnectionHandler {
-            override fun onReconnectStarted() {
-                SendBirdSyncManager.getInstance().pauseSync()
-            }
-
-            override fun onReconnectSucceeded() {
-                SendBirdSyncManager.getInstance().resumeSync()
-            }
-
-            override fun onReconnectFailed() {}
-        })
     }
 
     abstract fun getLayoutID(): Int

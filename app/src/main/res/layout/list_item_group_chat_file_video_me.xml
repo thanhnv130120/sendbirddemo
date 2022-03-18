@@ -45,6 +45,12 @@
                     android:adjustViewBounds="true"
                     android:scaleType="centerCrop" />
 
+                <SurfaceView
+                    android:id="@+id/imgSurfaceVideo"
+                    android:layout_width="228dp"
+                    android:layout_height="148dp"
+                    android:visibility="gone"/>
+
                 <ImageView
                     android:layout_width="228dp"
                     android:layout_height="148dp"

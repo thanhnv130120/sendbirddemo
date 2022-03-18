@@ -190,7 +190,6 @@ class ChatUtils {
                 thumbnailSizes,
                 fileMessageHandler
             )
-//            mChatAdapter?.addTempFileMessageInfo(tempFileMessage, uri)
             mMessageCollection?.appendMessage(tempFileMessage)
             onSendFileWithThumbnailListener.onSendFileWithThumbnailSucceed(tempFileMessage, uri)
         }

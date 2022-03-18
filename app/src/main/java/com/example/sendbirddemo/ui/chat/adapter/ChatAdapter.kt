@@ -2,7 +2,6 @@ package com.example.sendbirddemo.ui.chat.adapter
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +25,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
     private val mResendingMessageSet = mutableSetOf<String>()
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
     private var mOnItemMessageListener: OnItemMessageListener? = null
+    private var mOnFileMessageListener: OnFileMessageListener? = null
 
     private fun getMessage(position: Int): BaseMessage? {
         return when {
@@ -80,7 +80,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         mGroupChannel = channel
     }
 
-    fun isTempMessage(message: BaseMessage): Boolean {
+    private fun isTempMessage(message: BaseMessage): Boolean {
         return message.messageId == 0L
     }
 
@@ -105,7 +105,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         return ""
     }
 
-    fun getTempFileMessageUri(message: BaseMessage?): Uri? {
+    private fun getTempFileMessageUri(message: BaseMessage?): Uri? {
         if (!isTempMessage(message!!)) {
             return null
         }
@@ -177,11 +177,11 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                 mResendingMessageSet.add(requestId)
                 mFailedMessageList.add(message)
             }
-            mFailedMessageList.sortWith(Comparator { m1, m2 ->
+            mFailedMessageList.sortWith { m1, m2 ->
                 val x = m1.createdAt
                 val y = m2.createdAt
                 if (x < y) 1 else if (x == y) 0 else -1
-            })
+            }
         }
         notifyDataSetChanged()
     }
@@ -848,12 +848,20 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         }
     }
 
-    fun setOnItemMessageListener(onItemMessageListener: OnItemMessageListener){
+    fun setOnItemMessageListener(onItemMessageListener: OnItemMessageListener) {
         mOnItemMessageListener = onItemMessageListener
+    }
+
+    fun setOnFileMessageListener(onFileMessageListener: OnFileMessageListener) {
+        mOnFileMessageListener = onFileMessageListener
     }
 
     interface OnItemMessageListener {
         fun onItemMyMessageLongClicked(userMessage: UserMessage, position: Int)
+    }
+
+    interface OnFileMessageListener {
+        fun onFileMessageClicked(fileMessage: FileMessage)
     }
 
     companion object {

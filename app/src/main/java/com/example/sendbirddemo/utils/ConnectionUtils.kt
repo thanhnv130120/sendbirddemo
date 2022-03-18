@@ -61,6 +61,21 @@ class ConnectionUtils {
         }
     }
 
+    fun registerConnectionHandler(connectionHandlerId: String) {
+        SendBird.addConnectionHandler(connectionHandlerId, object :
+            SendBird.ConnectionHandler {
+            override fun onReconnectStarted() {
+                SendBirdSyncManager.getInstance().pauseSync()
+            }
+
+            override fun onReconnectSucceeded() {
+                SendBirdSyncManager.getInstance().resumeSync()
+            }
+
+            override fun onReconnectFailed() {}
+        })
+    }
+
     fun disconnect(handler: DisconnectHandler?) {
         SendBird.disconnect {
             SendBirdSyncManager.getInstance().pauseSync()
