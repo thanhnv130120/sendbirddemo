@@ -50,11 +50,11 @@
                 android:id="@+id/mLayoutChatFileMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_below="@id/tvNickname"
+                android:layout_toRightOf="@id/imgImageProfile"
                 android:background="@drawable/group_chat_file_background"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:layout_toRightOf="@id/imgImageProfile"
-                android:layout_below="@id/tvNickname"
                 android:padding="12dp">
 
                 <ImageView

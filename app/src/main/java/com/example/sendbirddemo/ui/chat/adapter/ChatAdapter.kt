@@ -2,19 +2,29 @@ package com.example.sendbirddemo.ui.chat.adapter
 
 import android.content.Context
 import android.net.Uri
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
 import androidx.recyclerview.widget.RecyclerView
+import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.*
 import com.example.sendbirddemo.utils.SyncManagerUtils
 import com.example.sendbirddemo.utils.SyncManagerUtils.getMyUserId
 import com.example.sendbirddemo.utils.UrlPreviewInfo
 import com.example.sendbirddemo.utils.Utils
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.sendbird.android.*
 import com.sendbird.android.FileMessage.Thumbnail
+import kotlinx.android.synthetic.main.custom_exo_controller_view.view.*
 import kotlinx.android.synthetic.main.partial_group_chat_info.view.*
 import org.json.JSONException
+import java.io.File
 import java.util.*
 
 class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -26,6 +36,9 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
     private var mOnItemMessageListener: OnItemMessageListener? = null
     private var mOnFileMessageListener: OnFileMessageListener? = null
+    private var mSimpleExoPlayer: SimpleExoPlayer? = null
+    private var mHttpDataSourceFactory: HttpDataSource.Factory? = null
+
 
     private fun getMessage(position: Int): BaseMessage? {
         return when {
@@ -234,6 +247,31 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         notifyDataSetChanged()
     }
 
+    fun setPlayVideo(playerView: PlayerView, videoURL: String) {
+        mSimpleExoPlayer = SimpleExoPlayer.Builder(context).build()
+        playerView.player = mSimpleExoPlayer
+        mSimpleExoPlayer!!.playWhenReady = true
+        mSimpleExoPlayer!!.setMediaSource(buildMediaSource(videoURL))
+        mSimpleExoPlayer!!.prepare()
+    }
+
+    fun releasePlayer() {
+        if (mSimpleExoPlayer == null) {
+            return
+        } else {
+            mSimpleExoPlayer!!.release()
+            mSimpleExoPlayer = null
+        }
+    }
+
+    private fun buildMediaSource(videoURL: String): MediaSource {
+        // Create a data source factory.
+        val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
+        // Create a progressive media source pointing to a stream uri.
+        return ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(videoURL))
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             VIEW_TYPE_USER_MESSAGE_ME -> {
@@ -319,7 +357,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                     listItemGroupChatFileMessageVideoMeBinding
                 )
             }
-            else -> {
+            VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER -> {
                 val listItemGroupChatFileMessageVideoOtherBinding =
                     ListItemGroupChatFileVideoOtherBinding.inflate(
                         LayoutInflater.from(parent.context),
@@ -329,6 +367,20 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                 OtherVideoFileMessageHolder(
                     listItemGroupChatFileMessageVideoOtherBinding
                 )
+            }
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME -> {
+                val listItemGroupChatFileAudioMeBinding =
+                    ListItemGroupChatFileAudioMeBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                MyAudioFileMessageHolder(listItemGroupChatFileAudioMeBinding)
+            }
+            else -> {
+                val listItemGroupChatFileAudioOtherBinding =
+                    ListItemGroupChatFileAudioOtherBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                OtherAudioFileMessageHolder(listItemGroupChatFileAudioOtherBinding)
             }
         }
     }
@@ -382,6 +434,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             )
             VIEW_TYPE_FILE_MESSAGE_ME -> (holder as MyFileMessageHolder).bind(
                 message as FileMessage,
+                mGroupChannel,
                 isNewDay
             )
             VIEW_TYPE_FILE_MESSAGE_OTHER -> (holder as OtherFileMessageHolder).bind(
@@ -398,7 +451,6 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             )
             VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER -> (holder as OtherImageFileMessageHolder).bind(
                 message as FileMessage,
-                mGroupChannel,
                 isNewDay,
                 isContinuous
             )
@@ -407,12 +459,28 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                 mGroupChannel,
                 isNewDay,
                 isTempMessage,
-                tempFileMessageUri
+                tempFileMessageUri,
+                mOnFileMessageListener!!
             )
             VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER -> (holder as OtherVideoFileMessageHolder).bind(
                 message as FileMessage,
                 isNewDay,
-                isContinuous
+                isContinuous,
+                mOnFileMessageListener!!
+            )
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME -> (holder as MyAudioFileMessageHolder).bind(
+                message as FileMessage,
+                mGroupChannel,
+                isNewDay,
+                mSimpleExoPlayer,
+                mOnFileMessageListener!!
+            )
+            VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER -> (holder as OtherAudioFileMessageHolder).bind(
+                message as FileMessage,
+                isNewDay,
+                isContinuous,
+                mSimpleExoPlayer,
+                mOnFileMessageListener!!
             )
         }
     }
@@ -464,11 +532,20 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                         VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER
                     }
                 } else {
-                    if (isMyMessage) {
-                        VIEW_TYPE_FILE_MESSAGE_ME
+                    if (message.type.toLowerCase().startsWith("audio/mpeg")) {
+                        if (isMyMessage) {
+                            VIEW_TYPE_FILE_MESSAGE_AUDIO_ME
+                        } else {
+                            VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER
+                        }
                     } else {
-                        VIEW_TYPE_FILE_MESSAGE_OTHER
+                        if (isMyMessage) {
+                            VIEW_TYPE_FILE_MESSAGE_ME
+                        } else {
+                            VIEW_TYPE_FILE_MESSAGE_OTHER
+                        }
                     }
+
                 }
             }
             is AdminMessage -> {
@@ -609,7 +686,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             channel: GroupChannel?,
             isNewDay: Boolean
         ) {
-            bind(message, isNewDay)
+            super.bind(message, isNewDay)
             binding.tvFileName.text = message.name
             binding.tvChatTime.text = Utils.formatTime(message.createdAt)
             binding.mLayoutMessageStatus.drawMessageStatus(channel, message)
@@ -711,7 +788,6 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         BaseViewHolder(binding.root) {
         fun bind(
             message: FileMessage,
-            channel: GroupChannel?,
             isNewDay: Boolean,
             isContinuous: Boolean
         ) {
@@ -782,7 +858,8 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             channel: GroupChannel?,
             isNewDay: Boolean,
             isTempMessage: Boolean,
-            tempFileMessageUri: Uri?
+            tempFileMessageUri: Uri?,
+            onFileMessageClicked: OnFileMessageListener,
         ) {
             super.bind(message, isNewDay)
             binding.tvChatTime.text = Utils.formatTime(message.createdAt)
@@ -806,6 +883,69 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                 }
             }
             binding.mLayoutMessageStatus.drawMessageStatus(channel, message)
+            binding.imgStart.setOnClickListener {
+                onFileMessageClicked.onFileMessageClicked(binding.imgSurfaceVideo, message)
+                binding.imgStart.visibility = View.GONE
+            }
+        }
+    }
+
+    private class MyAudioFileMessageHolder(val binding: ListItemGroupChatFileAudioMeBinding) :
+        BaseViewHolder(binding.root) {
+        fun bind(
+            message: FileMessage,
+            channel: GroupChannel?,
+            isNewDay: Boolean,
+            mSimpleExoPlayer: SimpleExoPlayer?,
+            onFileMessageClicked: OnFileMessageListener,
+        ) {
+            super.bind(message, isNewDay)
+            binding.tvChatTime.text = Utils.formatTime(message.createdAt)
+            binding.mLayoutMessageStatus.drawMessageStatus(channel, message)
+            if (mSimpleExoPlayer?.isLoading == true || mSimpleExoPlayer?.isPlaying == true) {
+                binding.btnPlay.setImageResource(R.drawable.ic_pause)
+            } else {
+                binding.btnPlay.setImageResource(R.drawable.ic_play)
+            }
+            binding.btnPlay.setOnClickListener {
+                onFileMessageClicked.onFileMessageClicked(binding.mPlayerView, message)
+            }
+        }
+    }
+
+    private class OtherAudioFileMessageHolder(val binding: ListItemGroupChatFileAudioOtherBinding) :
+        BaseViewHolder(binding.root) {
+        fun bind(
+            message: FileMessage,
+            isNewDay: Boolean,
+            isContinuous: Boolean,
+            mSimpleExoPlayer: SimpleExoPlayer?,
+            onFileMessageClicked: OnFileMessageListener,
+        ) {
+            super.bind(message, isNewDay)
+            binding.tvChatTime.text = Utils.formatTime(message.createdAt)
+            if (isContinuous) {
+                binding.imgImageProfile.visibility = View.INVISIBLE
+                binding.tvChatTime.visibility = View.GONE
+                binding.tvNickname.visibility = View.GONE
+            } else {
+                binding.imgImageProfile.visibility = View.VISIBLE
+                Utils.displayRoundImageFromUrl(
+                    binding.imgImageProfile.context,
+                    message.sender.profileUrl,
+                    binding.imgImageProfile
+                )
+                binding.tvNickname.visibility = View.VISIBLE
+                binding.tvNickname.text = message.sender.nickname
+            }
+            if (mSimpleExoPlayer?.isLoading == true || mSimpleExoPlayer?.isPlaying == true) {
+                binding.btnPlay.setImageResource(R.drawable.ic_pause)
+            } else {
+                binding.btnPlay.setImageResource(R.drawable.ic_play)
+            }
+            binding.btnPlay.setOnClickListener {
+                onFileMessageClicked.onFileMessageClicked(binding.mPlayerView, message)
+            }
         }
     }
 
@@ -814,7 +954,8 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         fun bind(
             message: FileMessage,
             isNewDay: Boolean,
-            isContinuous: Boolean
+            isContinuous: Boolean,
+            mOnFileMessageListener: OnFileMessageListener
         ) {
             super.bind(message, isNewDay)
             binding.tvChatTime.text = Utils.formatTime(message.createdAt)
@@ -823,6 +964,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             if (isContinuous) {
                 binding.imgImageProfile.visibility = View.INVISIBLE
                 binding.tvChatTime.visibility = View.GONE
+                binding.tvNickname.visibility = View.GONE
             } else {
                 binding.imgImageProfile.visibility = View.VISIBLE
                 Utils.displayRoundImageFromUrl(
@@ -845,8 +987,13 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                     binding.imgChatFileThumbnail
                 )
             }
+            binding.imgPlay.setOnClickListener {
+                mOnFileMessageListener.onFileMessageClicked(binding.imgSurfaceVideo, message)
+                binding.imgPlay.visibility = View.GONE
+            }
         }
     }
+
 
     fun setOnItemMessageListener(onItemMessageListener: OnItemMessageListener) {
         mOnItemMessageListener = onItemMessageListener
@@ -861,7 +1008,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
     }
 
     interface OnFileMessageListener {
-        fun onFileMessageClicked(fileMessage: FileMessage)
+        fun onFileMessageClicked(playerView: PlayerView, fileMessage: FileMessage)
     }
 
     companion object {
@@ -875,6 +1022,8 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         private const val VIEW_TYPE_FILE_MESSAGE_IMAGE_OTHER = 23
         private const val VIEW_TYPE_FILE_MESSAGE_VIDEO_ME = 24
         private const val VIEW_TYPE_FILE_MESSAGE_VIDEO_OTHER = 25
+        private const val VIEW_TYPE_FILE_MESSAGE_AUDIO_ME = 26
+        private const val VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER = 27
         private const val VIEW_TYPE_ADMIN_MESSAGE = 30
     }
 

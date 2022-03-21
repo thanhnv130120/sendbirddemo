@@ -1,0 +1,92 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
+
+        <include
+            android:id="@+id/mLayoutChatInfo"
+            layout="@layout/partial_group_chat_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mLayoutChatInfo">
+
+            <ImageView
+                android:id="@+id/imgImageProfile"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignWithParentIfMissing="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/profile_placeholder" />
+
+            <TextView
+                android:id="@+id/tvNickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/imgImageProfile"
+                android:layout_toRightOf="@id/imgImageProfile"
+                android:text="Daniel Silberschatz"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:id="@+id/mLayoutChatFileAudioMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvNickname"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="8dp"
+                android:layout_toEndOf="@id/imgImageProfile"
+                android:background="@drawable/group_chat_other_audio_background"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="8dp">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/btnPlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tint="@color/white"
+                    app:srcCompat="@drawable/ic_play" />
+
+                <com.google.android.exoplayer2.ui.PlayerView
+                    android:id="@+id/mPlayerView"
+                    android:layout_width="220dp"
+                    android:layout_height="40dp"
+                    android:padding="12dp"
+                    app:controller_layout_id="@layout/custom_exo_controller_view"
+                    app:show_buffering="always"
+                    app:show_timeout="0"
+                    app:shutter_background_color="@color/btn_send_disabled" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvChatTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/mLayoutChatFileAudioMessage"
+                android:layout_marginBottom="8dp"
+                android:layout_toEndOf="@id/mLayoutChatFileAudioMessage"
+                android:text="21:27"
+                android:textColor="#8e8e8e"
+                android:textSize="10dp" />
+
+        </RelativeLayout>
+    </RelativeLayout>
+</layout>

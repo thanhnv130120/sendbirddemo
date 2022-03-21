@@ -29,6 +29,8 @@ import com.example.sendbirddemo.utils.ChatUtils
 import com.example.sendbirddemo.utils.Constants
 import com.example.sendbirddemo.utils.SharedPreferenceUtils
 import com.example.sendbirddemo.utils.Utils
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ui.PlayerView
 import com.sendbird.android.*
 import com.sendbird.android.BaseChannel.UpdateUserMessageHandler
 import com.sendbird.android.SendBird.ChannelHandler
@@ -295,6 +297,14 @@ class ChatFragment : BasePermissionRequestFragment<FragmentChatBinding>() {
                 ) {
                     showMessageOptionsDialog(userMessage, position)
                 }
+            }
+
+        })
+
+        mChatAdapter?.setOnFileMessageListener(object : ChatAdapter.OnFileMessageListener {
+            override fun onFileMessageClicked(playerView: PlayerView, fileMessage: FileMessage) {
+                mChatAdapter!!.releasePlayer()
+                mChatAdapter!!.setPlayVideo(playerView, fileMessage.url)
             }
 
         })

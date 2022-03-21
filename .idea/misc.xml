@@ -32,13 +32,27 @@
         <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/list_item_group_chat_user_other.xml" value="0.36666666666666664" />
         <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/partial_group_chat_info.xml" value="0.36666666666666664" />
         <entry key="..\:/android-demo/sendbirddemo/app/src/main/res/layout/view_message_status.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/drawable-v24/group_chat_date_background.xml" value="0.2815" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/drawable/group_chat_my_audio_background.xml" value="0.2815" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/drawable/group_chat_other_audio_background.xml" value="0.2815" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/drawable/ic_play.xml" value="0.2815" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/custom_exo_controller_view.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/fragment_chat.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/fragment_invite_member.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/fragment_member_list.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/item_rc_group_channel.xml" value="0.33240740740740743" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_audio_me.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_audio_me.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_audio_other.xml" value="0.33240740740740743" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_image_me.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_me.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_other.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_video_me.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_file_video_other.xml" value="0.33240740740740743" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_group_chat_user_other.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/list_item_user.xml" value="0.36666666666666664" />
+        <entry key="..\:/android/sendbirddemo/app/src/main/res/layout/partial_group_chat_info.xml" value="0.36666666666666664" />
         <entry key="..\:/android/sendbirddemo/app/src/main/res/menu/menu_group_chat.xml" value="0.36666666666666664" />
       </map>
     </option>

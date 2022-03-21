@@ -64,7 +64,14 @@
                     android:scaleType="centerCrop"
                     android:adjustViewBounds="true" />
 
+                <com.google.android.exoplayer2.ui.PlayerView
+                    android:id="@+id/imgSurfaceVideo"
+                    android:layout_width="228dp"
+                    android:layout_height="148dp"
+                    android:visibility="visible" />
+
                 <ImageView
+                    android:id="@+id/imgPlay"
                     android:layout_width="228dp"
                     android:layout_height="148dp"
                     android:scaleType="fitCenter"
@@ -75,14 +82,14 @@
 
             <TextView
                 android:id="@+id/tvChatTime"
-                android:textSize="10dp"
-                android:text="21:27"
-                android:textColor="#8e8e8e"
-                android:layout_toEndOf="@id/cvChatMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/cvChatMessage"
                 android:layout_marginBottom="8dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_toEndOf="@id/cvChatMessage"
+                android:text="21:27"
+                android:textColor="#8e8e8e"
+                android:textSize="10dp" />
 
         </RelativeLayout>
     </RelativeLayout>
