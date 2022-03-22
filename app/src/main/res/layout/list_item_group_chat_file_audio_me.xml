@@ -52,6 +52,7 @@
                     app:controller_layout_id="@layout/custom_exo_controller_view"
                     app:show_buffering="always"
                     app:show_timeout="0"
+                    app:hide_on_touch="false"
                     app:shutter_background_color="@color/groupChatBubbleMe" />
 
             </LinearLayout>

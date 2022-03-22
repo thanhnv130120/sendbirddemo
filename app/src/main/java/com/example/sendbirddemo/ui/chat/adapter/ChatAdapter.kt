@@ -36,8 +36,6 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
     private val mTempFileMessageUriTable = Hashtable<String, Uri>()
     private var mOnItemMessageListener: OnItemMessageListener? = null
     private var mOnFileMessageListener: OnFileMessageListener? = null
-    private var mSimpleExoPlayer: SimpleExoPlayer? = null
-    private var mHttpDataSourceFactory: HttpDataSource.Factory? = null
 
 
     private fun getMessage(position: Int): BaseMessage? {
@@ -247,31 +245,6 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         notifyDataSetChanged()
     }
 
-    fun setPlayVideo(playerView: PlayerView, videoURL: String) {
-        mSimpleExoPlayer = SimpleExoPlayer.Builder(context).build()
-        playerView.player = mSimpleExoPlayer
-        mSimpleExoPlayer!!.playWhenReady = true
-        mSimpleExoPlayer!!.setMediaSource(buildMediaSource(videoURL))
-        mSimpleExoPlayer!!.prepare()
-    }
-
-    fun releasePlayer() {
-        if (mSimpleExoPlayer == null) {
-            return
-        } else {
-            mSimpleExoPlayer!!.release()
-            mSimpleExoPlayer = null
-        }
-    }
-
-    private fun buildMediaSource(videoURL: String): MediaSource {
-        // Create a data source factory.
-        val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
-        // Create a progressive media source pointing to a stream uri.
-        return ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(videoURL))
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             VIEW_TYPE_USER_MESSAGE_ME -> {
@@ -472,14 +445,12 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                 message as FileMessage,
                 mGroupChannel,
                 isNewDay,
-                mSimpleExoPlayer,
                 mOnFileMessageListener!!
             )
             VIEW_TYPE_FILE_MESSAGE_AUDIO_OTHER -> (holder as OtherAudioFileMessageHolder).bind(
                 message as FileMessage,
                 isNewDay,
                 isContinuous,
-                mSimpleExoPlayer,
                 mOnFileMessageListener!!
             )
         }
@@ -896,17 +867,12 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             message: FileMessage,
             channel: GroupChannel?,
             isNewDay: Boolean,
-            mSimpleExoPlayer: SimpleExoPlayer?,
             onFileMessageClicked: OnFileMessageListener,
         ) {
             super.bind(message, isNewDay)
             binding.tvChatTime.text = Utils.formatTime(message.createdAt)
             binding.mLayoutMessageStatus.drawMessageStatus(channel, message)
-            if (mSimpleExoPlayer?.isLoading == true || mSimpleExoPlayer?.isPlaying == true) {
-                binding.btnPlay.setImageResource(R.drawable.ic_pause)
-            } else {
-                binding.btnPlay.setImageResource(R.drawable.ic_play)
-            }
+            binding.btnPlay.setImageResource(R.drawable.ic_play)
             binding.btnPlay.setOnClickListener {
                 onFileMessageClicked.onFileMessageClicked(binding.mPlayerView, message)
             }
@@ -919,7 +885,6 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
             message: FileMessage,
             isNewDay: Boolean,
             isContinuous: Boolean,
-            mSimpleExoPlayer: SimpleExoPlayer?,
             onFileMessageClicked: OnFileMessageListener,
         ) {
             super.bind(message, isNewDay)
@@ -938,11 +903,7 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
                 binding.tvNickname.visibility = View.VISIBLE
                 binding.tvNickname.text = message.sender.nickname
             }
-            if (mSimpleExoPlayer?.isLoading == true || mSimpleExoPlayer?.isPlaying == true) {
-                binding.btnPlay.setImageResource(R.drawable.ic_pause)
-            } else {
-                binding.btnPlay.setImageResource(R.drawable.ic_play)
-            }
+            binding.btnPlay.setImageResource(R.drawable.ic_play)
             binding.btnPlay.setOnClickListener {
                 onFileMessageClicked.onFileMessageClicked(binding.mPlayerView, message)
             }

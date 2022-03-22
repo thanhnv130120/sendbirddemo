@@ -25,11 +25,7 @@ import com.example.sendbirddemo.R
 import com.example.sendbirddemo.databinding.FragmentChatBinding
 import com.example.sendbirddemo.ui.base.BasePermissionRequestFragment
 import com.example.sendbirddemo.ui.chat.adapter.ChatAdapter
-import com.example.sendbirddemo.utils.ChatUtils
-import com.example.sendbirddemo.utils.Constants
-import com.example.sendbirddemo.utils.SharedPreferenceUtils
-import com.example.sendbirddemo.utils.Utils
-import com.google.android.exoplayer2.Player
+import com.example.sendbirddemo.utils.*
 import com.google.android.exoplayer2.ui.PlayerView
 import com.sendbird.android.*
 import com.sendbird.android.BaseChannel.UpdateUserMessageHandler
@@ -55,6 +51,9 @@ class ChatFragment : BasePermissionRequestFragment<FragmentChatBinding>() {
     private val chatUtils: ChatUtils by lazy {
         ChatUtils()
     }
+    private val mExoPlayerUtils: ExoPlayerUtils by lazy {
+        ExoPlayerUtils()
+    }
 
     override fun getLayoutID() = R.layout.fragment_chat
 
@@ -67,12 +66,13 @@ class ChatFragment : BasePermissionRequestFragment<FragmentChatBinding>() {
         binding!!.edtInputChat.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                if (s.isEmpty()){
+                if (s.isEmpty()) {
                     setTypingStatus(false)
                 } else {
                     setTypingStatus(true)
                 }
             }
+
             override fun afterTextChanged(s: Editable) {
                 binding!!.btnSend.isEnabled = s.isNotEmpty()
             }
@@ -303,8 +303,7 @@ class ChatFragment : BasePermissionRequestFragment<FragmentChatBinding>() {
 
         mChatAdapter?.setOnFileMessageListener(object : ChatAdapter.OnFileMessageListener {
             override fun onFileMessageClicked(playerView: PlayerView, fileMessage: FileMessage) {
-                mChatAdapter!!.releasePlayer()
-                mChatAdapter!!.setPlayVideo(playerView, fileMessage.url)
+                mExoPlayerUtils.initPlayer(requireContext(), playerView, fileMessage.url)
             }
 
         })

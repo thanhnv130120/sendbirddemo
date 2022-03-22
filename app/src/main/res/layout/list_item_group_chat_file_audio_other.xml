@@ -70,6 +70,7 @@
                     android:layout_height="40dp"
                     android:padding="12dp"
                     app:controller_layout_id="@layout/custom_exo_controller_view"
+                    app:hide_on_touch="false"
                     app:show_buffering="always"
                     app:show_timeout="0"
                     app:shutter_background_color="@color/btn_send_disabled" />
