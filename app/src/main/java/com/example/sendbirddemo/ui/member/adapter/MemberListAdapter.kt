@@ -15,7 +15,7 @@ class MemberListAdapter : RecyclerView.Adapter<MemberListAdapter.MemberListViewH
     fun setUserList(users: MutableList<User>) {
         mUsers.clear()
         mUsers.addAll(users)
-        notifyDataSetChanged()
+        notifyItemRangeInserted(0, mUsers.size)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberListViewHolder {

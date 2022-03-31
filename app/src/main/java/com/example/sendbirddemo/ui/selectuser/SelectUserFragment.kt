@@ -1,15 +1,17 @@
 package com.example.sendbirddemo.ui.selectuser
 
-import android.util.Log
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sendbirddemo.R
+import com.example.sendbirddemo.data.LoadDataStatus
+import com.example.sendbirddemo.data.response.DataResponse
 import com.example.sendbirddemo.databinding.FragmentSelectUserBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.ui.selectuser.adapter.SelectableUserAdapter
-import com.example.sendbirddemo.utils.ChatUtils
+import com.example.sendbirddemo.ui.splash.SplashViewModel
 import com.example.sendbirddemo.utils.GroupUtils
 import com.sendbird.android.ApplicationUserListQuery
 import com.sendbird.android.SendBird
@@ -18,33 +20,11 @@ import com.sendbird.android.UserListQuery.UserListQueryResultHandler
 
 class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
 
-    private var mListUserQuery: ApplicationUserListQuery? = null
+    private lateinit var viewModel: SelectUserViewModel
     private val mSelectableUserAdapter by lazy {
         SelectableUserAdapter()
     }
-    private var mSelectedIds = mutableListOf<String>()
-    private val chatUtils: ChatUtils by lazy {
-        ChatUtils()
-    }
     private var mLayoutManager: LinearLayoutManager? = null
-    private val groupUtils: GroupUtils by lazy {
-        GroupUtils(object : GroupUtils.OnGroupListener {
-            override fun onCreateGroupSuccess(groupUrl: String) {
-                val action = SelectUserFragmentDirections.actionGlobalChatFragment()
-                    .setGroupChannelUrl(groupUrl)
-                findNavController().navigate(action)
-            }
-
-            override fun onInviteMembers() {
-
-            }
-
-            override fun onLeaveGroupSuccess() {
-
-            }
-
-        })
-    }
 
     override fun getLayoutID() = R.layout.fragment_select_user
 
@@ -53,9 +33,9 @@ class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
             SelectableUserAdapter.OnItemCheckedChangeListener {
             override fun OnItemChecked(user: User?, checked: Boolean) {
                 if (checked) {
-                    mSelectedIds.add(user!!.userId)
+                    viewModel.onPlusId(user)
                 } else {
-                    mSelectedIds.remove(user!!.userId)
+                    viewModel.onMinusId(user)
                 }
             }
 
@@ -63,20 +43,48 @@ class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
 
         if (SendBird.getConnectionState() == SendBird.ConnectionState.OPEN) {
             setUpRecyclerView()
-            loadInitialUserList(15)
+            viewModel.onLoadInitialUserList()
         }
 
-        binding!!.fabCreateGroup.setOnClickListener {
-            if (mSelectedIds.isEmpty()) {
-
-            } else {
-                groupUtils.createGroupChannel(mSelectedIds, false)
-            }
-        }
+        binding!!.viewModel = viewModel
     }
 
     override fun initViewModel() {
+        val factory = SelectUserViewModel.Factory(requireActivity().application)
+        viewModel = ViewModelProvider(this, factory)[SelectUserViewModel::class.java]
 
+        viewModel.mGroupCreatedLiveData.observe(this) {
+            if (it.loadDataStatus == LoadDataStatus.SUCCESS) {
+                val result = (it as DataResponse.DataSuccessResponse).body
+                val action = SelectUserFragmentDirections.actionGlobalChatFragment()
+                    .setGroupChannelUrl(result)
+                findNavController().navigate(action)
+            }
+        }
+
+        viewModel.mInitialUserListLiveData.observe(this) {
+            when (it.loadDataStatus) {
+                LoadDataStatus.SUCCESS -> {
+                    val result = (it as DataResponse.DataSuccessResponse).body
+                    mSelectableUserAdapter.setUserList(result)
+                }
+                LoadDataStatus.ERROR -> {
+
+                }
+            }
+        }
+
+        viewModel.mNextUserListLiveData.observe(this) {
+            when (it.loadDataStatus) {
+                LoadDataStatus.SUCCESS -> {
+                    val result = (it as DataResponse.DataSuccessResponse).body
+                    mSelectableUserAdapter.addLast(result)
+                }
+                LoadDataStatus.ERROR -> {
+
+                }
+            }
+        }
     }
 
     private fun setUpRecyclerView() {
@@ -88,39 +96,10 @@ class SelectUserFragment : BaseFragment<FragmentSelectUserBinding>() {
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     if (mLayoutManager!!.findLastVisibleItemPosition() == mSelectableUserAdapter.itemCount - 1) {
-                        loadNextUserList(10)
+                        viewModel.onLoadNextUserList()
                     }
                 }
             })
         }
-    }
-
-    /**
-     * Replaces current user list with new list.
-     * Should be used only on initial load.
-     */
-    private fun loadInitialUserList(size: Int) {
-        mListUserQuery = SendBird.createApplicationUserListQuery()
-        mListUserQuery?.setLimit(size)
-        mListUserQuery?.next(UserListQueryResultHandler { list, e ->
-            if (e != null) {
-                // Error!
-                return@UserListQueryResultHandler
-            }
-            mSelectableUserAdapter.setUserList(list)
-        })
-    }
-
-    private fun loadNextUserList(size: Int) {
-        mListUserQuery?.setLimit(size)
-        mListUserQuery?.next(UserListQueryResultHandler { list, e ->
-            if (e != null) {
-                // Error!
-                return@UserListQueryResultHandler
-            }
-            for (user in list) {
-                mSelectableUserAdapter.addLast(user)
-            }
-        })
     }
 }

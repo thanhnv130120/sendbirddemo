@@ -18,12 +18,12 @@ class SelectableUserAdapter :
 
     fun setUserList(userList: MutableList<User>) {
         users = userList
-        notifyDataSetChanged()
+        notifyItemRangeInserted(0, users.size)
     }
 
     fun addLast(user: User) {
         users.add(user)
-        notifyDataSetChanged()
+        notifyItemInserted(users.indexOf(user))
     }
 
     fun getUsers(): MutableList<User> {

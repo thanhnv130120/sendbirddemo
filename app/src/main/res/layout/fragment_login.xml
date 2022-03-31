@@ -3,6 +3,9 @@
 
     <data>
 
+        <variable
+            name="viewModel"
+            type="com.example.sendbirddemo.ui.login.LoginViewModel" />
     </data>
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -27,7 +30,8 @@
                 android:layout_height="wrap_content"
                 android:hint="UserID"
                 android:imeOptions="actionNext"
-                android:inputType="textVisiblePassword" />
+                android:inputType="textVisiblePassword"
+                android:text="@={viewModel.userIdLiveData}" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -42,7 +46,8 @@
                 android:layout_height="wrap_content"
                 android:hint="Nickname"
                 android:imeOptions="actionDone"
-                android:inputType="textVisiblePassword" />
+                android:inputType="textVisiblePassword"
+                android:text="@={viewModel.nickNameLiveData}" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -52,6 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="44dp"
+            android:onClick="@{()->viewModel.onLogin()}"
             android:stateListAnimator="@null"
             android:text="Connect" />
 

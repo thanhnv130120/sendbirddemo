@@ -35,6 +35,10 @@ class GroupChannelListAdapter :
     private val mGroupChannelBitmapMap = ConcurrentHashMap<String, SparseArray<Bitmap>>()
     private var mItemClickListener: OnItemClickListener? = null
 
+    fun notifyGroupChannelChange(groupChannel: GroupChannel){
+        notifyItemChanged(mGroupChannelList.indexOf(groupChannel))
+    }
+
     fun insertChannels(channels: List<GroupChannel>, order: GroupChannelListQuery.Order) {
         for (newChannel in channels) {
             val index: Int =

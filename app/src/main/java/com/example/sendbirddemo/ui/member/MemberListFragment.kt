@@ -2,13 +2,17 @@ package com.example.sendbirddemo.ui.member
 
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.sendbirddemo.R
+import com.example.sendbirddemo.data.LoadDataStatus
+import com.example.sendbirddemo.data.response.DataResponse
 import com.example.sendbirddemo.databinding.FragmentMemberListBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
 import com.example.sendbirddemo.ui.member.adapter.MemberListAdapter
+import com.example.sendbirddemo.ui.selectuser.SelectUserViewModel
 import com.example.sendbirddemo.utils.Constants
 import com.example.sendbirddemo.utils.SyncManagerUtils
 import com.sendbird.android.BaseChannel
@@ -22,6 +26,7 @@ class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
         MemberListAdapter()
     }
     private var mGroupChannel: GroupChannel? = null
+    private lateinit var viewModel: MemberListViewModel
 
     override fun getLayoutID() = R.layout.fragment_member_list
 
@@ -30,12 +35,21 @@ class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         mGroupChannel =
             BaseChannel.buildFromSerializedData(arguments?.getByteArray(Constants.GROUP_CHANNEL_KEY)) as GroupChannel
-        setMemberList(mGroupChannel!!.members)
+        viewModel.setMemberList(mGroupChannel!!.members)
         setUpRecyclerView()
     }
 
     override fun initViewModel() {
         setHasOptionsMenu(true)
+        val factory = MemberListViewModel.Factory(requireActivity().application)
+        viewModel = ViewModelProvider(this, factory)[MemberListViewModel::class.java]
+
+        viewModel.mMemberListLiveData.observe(this){
+            if (it.loadDataStatus == LoadDataStatus.SUCCESS) {
+                val result = (it as DataResponse.DataSuccessResponse).body
+                mMemberListAdapter.setUserList(result.toMutableList())
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -58,18 +72,5 @@ class MemberListFragment : BaseFragment<FragmentMemberListBinding>() {
                 )
             )
         }
-    }
-
-    private fun setMemberList(memberList: List<Member>) {
-        val sortedUserList: MutableList<Member> = ArrayList()
-        val myUserId: String? = SyncManagerUtils.getMyUserId(requireContext())
-        for (member in memberList) {
-            if (member.userId == myUserId) {
-                sortedUserList.add(0, member)
-            } else {
-                sortedUserList.add(member)
-            }
-        }
-        mMemberListAdapter.setUserList(sortedUserList.toMutableList())
     }
 }

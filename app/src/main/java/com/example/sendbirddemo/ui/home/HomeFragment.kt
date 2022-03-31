@@ -1,6 +1,5 @@
 package com.example.sendbirddemo.ui.home
 
-import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -24,7 +23,9 @@ import com.sendbird.syncmanager.handler.ChannelCollectionHandler
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
-    private var mGroupChannelListAdapter: GroupChannelListAdapter? = null
+    private val mGroupChannelListAdapter by lazy {
+        GroupChannelListAdapter()
+    }
     private var mChannelCollection: ChannelCollection? = null
     private var mLayoutManager: LinearLayoutManager? = null
     private val connectionUtils: ConnectionUtils by lazy {
@@ -50,8 +51,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun getLayoutID() = R.layout.fragment_home
 
     override fun initView() {
-        mGroupChannelListAdapter = GroupChannelListAdapter()
-
         binding!!.mSwipeRefresh.setOnRefreshListener {
             binding!!.mSwipeRefresh.isRefreshing = true
             refresh()
@@ -83,7 +82,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
                 override fun onChannelChanged(channel: BaseChannel) {}
                 override fun onTypingStatusUpdated(channel: GroupChannel) {
-                    mGroupChannelListAdapter?.notifyDataSetChanged()
+                    mGroupChannelListAdapter.notifyGroupChannelChange(channel)
                 }
             })
         super.onResume()
@@ -102,13 +101,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         super.onDestroy()
     }
 
-    fun connect() {
+    private fun connect() {
         if (SendBird.getConnectionState() != SendBird.ConnectionState.OPEN) {
             connectionUtils.connect(
                 requireContext(),
                 SharedPreferenceUtils.getInstance(requireContext())?.getUserId()!!,
                 SharedPreferenceUtils.getInstance(requireContext())?.getNickname()!!
-            ) { user, e ->
+            ) { _, e ->
                 if (e != null) {
                     e.printStackTrace()
                 } else {
@@ -135,7 +134,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        if (mLayoutManager!!.findLastVisibleItemPosition() == mGroupChannelListAdapter?.itemCount?.minus(
+                        if (mLayoutManager!!.findLastVisibleItemPosition() == mGroupChannelListAdapter.itemCount.minus(
                                 1
                             )
                         ) {
@@ -155,7 +154,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     // Sets up channel list adapter
     private fun setUpChannelListAdapter() {
-        mGroupChannelListAdapter?.setOnItemClickListener(object :
+        mGroupChannelListAdapter.setOnItemClickListener(object :
             GroupChannelListAdapter.OnItemClickListener {
             override fun onItemClick(channel: GroupChannel?) {
                 val action = HomeFragmentDirections.actionGlobalChatFragment()
@@ -181,12 +180,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         ) else arrayOf(getString(R.string.leave_channel), getString(R.string.set_push_on))
         val builder = AlertDialog.Builder(requireActivity())
         builder.setTitle(getString(R.string.channel_option))
-            .setItems(options) { dialog, which ->
+            .setItems(options) { _, which ->
                 if (which == 0) {
                     // Show a dialog to confirm that the user wants to leave the channel.
                     AlertDialog.Builder(requireActivity())
                         .setTitle(getString(R.string.request_leave_channel, channel.name))
-                        .setPositiveButton(R.string.action_leave_channel) { dialog, which ->
+                        .setPositiveButton(R.string.action_leave_channel) { _, _ ->
                             groupUtils.leaveGroupChannel(
                                 channel.url
                             )
@@ -209,8 +208,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         if (mChannelCollection != null) {
             mChannelCollection!!.remove()
         }
-        mGroupChannelListAdapter?.clearMap()
-        mGroupChannelListAdapter?.clearGroupChannelList()
+        mGroupChannelListAdapter.clearMap()
+        mGroupChannelListAdapter.clearGroupChannelList()
         val query = groupUtils.getListGroupChannel()
         mChannelCollection = ChannelCollection(query)
         mChannelCollection!!.setCollectionHandler(mChannelCollectionHandler)
@@ -232,30 +231,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 }
                 when (channelEventAction) {
                     ChannelEventAction.INSERT -> {
-                        mGroupChannelListAdapter?.clearMap()
-                        mGroupChannelListAdapter?.insertChannels(
+                        mGroupChannelListAdapter.clearMap()
+                        mGroupChannelListAdapter.insertChannels(
                             list,
                             channelCollection.query.order
                         )
                     }
                     ChannelEventAction.UPDATE -> {
-                        mGroupChannelListAdapter?.clearMap()
-                        mGroupChannelListAdapter?.updateGroupChannels(list)
+                        mGroupChannelListAdapter.clearMap()
+                        mGroupChannelListAdapter.updateGroupChannels(list)
                     }
                     ChannelEventAction.MOVE -> {
-                        mGroupChannelListAdapter?.clearMap()
-                        mGroupChannelListAdapter?.moveGroupChannels(
+                        mGroupChannelListAdapter.clearMap()
+                        mGroupChannelListAdapter.moveGroupChannels(
                             list,
                             channelCollection.query.order
                         )
                     }
                     ChannelEventAction.REMOVE -> {
-                        mGroupChannelListAdapter?.clearMap()
-                        mGroupChannelListAdapter?.removeGroupChannels(list)
+                        mGroupChannelListAdapter.clearMap()
+                        mGroupChannelListAdapter.removeGroupChannels(list)
                     }
                     else -> {
-                        mGroupChannelListAdapter?.clearMap()
-                        mGroupChannelListAdapter?.clearGroupChannelList()
+                        mGroupChannelListAdapter.clearMap()
+                        mGroupChannelListAdapter.clearGroupChannelList()
                     }
                 }
             }

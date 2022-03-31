@@ -4,6 +4,9 @@
 
     <data>
 
+        <variable
+            name="viewModel"
+            type="com.example.sendbirddemo.ui.selectuser.SelectUserViewModel" />
     </data>
 
     <FrameLayout
@@ -14,13 +17,14 @@
             android:id="@+id/rcSelectUser"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="vertical"/>
+            android:scrollbars="vertical" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabCreateGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
+            android:onClick="@{()->viewModel.onCreateGroup()}"
             app:srcCompat="@drawable/ic_add_white"
             app:useCompatPadding="true" />
     </FrameLayout>

@@ -367,8 +367,6 @@ class ChatAdapter(val context: Context) : RecyclerView.Adapter<RecyclerView.View
         var tempFileMessageUri: Uri? = null
 
         // If there is at least one item preceding the current one, check the previous message.
-
-        // If there is at least one item preceding the current one, check the previous message.
         if (position < mMessageList.size + mFailedMessageList.size - 1) {
             val prevMessage: BaseMessage? = getMessage(position + 1)
 

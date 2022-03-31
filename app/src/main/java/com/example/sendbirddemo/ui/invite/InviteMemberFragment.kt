@@ -1,17 +1,20 @@
 package com.example.sendbirddemo.ui.invite
 
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sendbirddemo.R
+import com.example.sendbirddemo.data.LoadDataStatus
+import com.example.sendbirddemo.data.response.DataResponse
 import com.example.sendbirddemo.databinding.FragmentInviteMemberBinding
 import com.example.sendbirddemo.ui.base.BaseFragment
+import com.example.sendbirddemo.ui.login.LoginViewModel
 import com.example.sendbirddemo.ui.selectuser.adapter.SelectableUserAdapter
 import com.example.sendbirddemo.utils.GroupUtils
 import com.sendbird.android.ApplicationUserListQuery
@@ -19,29 +22,12 @@ import com.sendbird.android.SendBird
 import com.sendbird.android.User
 import com.sendbird.android.UserListQuery
 
-class InviteMemberFragment : BaseFragment<FragmentInviteMemberBinding>(), View.OnClickListener {
+class InviteMemberFragment : BaseFragment<FragmentInviteMemberBinding>() {
 
     private val args: InviteMemberFragmentArgs by navArgs()
+    private lateinit var viewModel: InviteMemberViewModel
     private val mSelectableUserAdapter by lazy {
         SelectableUserAdapter()
-    }
-    private var mListUserQuery: ApplicationUserListQuery? = null
-    private var mSelectedIds = mutableListOf<String>()
-    private val mGroupUtils: GroupUtils by lazy {
-        GroupUtils(object : GroupUtils.OnGroupListener{
-            override fun onCreateGroupSuccess(groupUrl: String) {
-
-            }
-
-            override fun onInviteMembers() {
-                findNavController().navigateUp()
-            }
-
-            override fun onLeaveGroupSuccess() {
-
-            }
-
-        })
     }
     private var mLayoutManager: LinearLayoutManager? = null
 
@@ -52,44 +38,70 @@ class InviteMemberFragment : BaseFragment<FragmentInviteMemberBinding>(), View.O
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
         if (SendBird.getConnectionState() == SendBird.ConnectionState.OPEN) {
             setUpRecyclerView()
-            loadInitialUserList(15)
+            viewModel.onLoadInitialUserList()
         }
-
-        binding!!.btnInvite.isEnabled = false
-        binding!!.btnInvite.setOnClickListener(this)
 
         mSelectableUserAdapter.setItemCheckedChangeListener(object :
             SelectableUserAdapter.OnItemCheckedChangeListener {
             override fun OnItemChecked(user: User?, checked: Boolean) {
                 if (checked) {
-                    mSelectedIds.add(user!!.userId)
+                    viewModel.onPlusId(user)
                 } else {
-                    mSelectedIds.remove(user!!.userId)
+                    viewModel.onMinusId(user)
                 }
-                binding!!.btnInvite.isEnabled = mSelectedIds.isNotEmpty()
             }
 
         })
+
+        binding!!.viewModel = viewModel
     }
 
     override fun initViewModel() {
         setHasOptionsMenu(true)
+        val factory =
+            InviteMemberViewModel.Factory(requireActivity().application, args.groupChannelUrl)
+        viewModel = ViewModelProvider(this, factory)[InviteMemberViewModel::class.java]
+
+        viewModel.mInviteMembersLiveData.observe(this) {
+            if (it.loadDataStatus == LoadDataStatus.SUCCESS) {
+                val result = (it as DataResponse.DataSuccessResponse).body
+                if (result){
+                    findNavController().navigateUp()
+                }
+            }
+        }
+
+        viewModel.mInitialUserListLiveData.observe(this) {
+            when (it.loadDataStatus) {
+                LoadDataStatus.SUCCESS -> {
+                    val result = (it as DataResponse.DataSuccessResponse).body
+                    mSelectableUserAdapter.setUserList(result)
+                }
+                LoadDataStatus.ERROR -> {
+
+                }
+            }
+        }
+
+        viewModel.mNextUserListLiveData.observe(this) {
+            when (it.loadDataStatus) {
+                LoadDataStatus.SUCCESS -> {
+                    val result = (it as DataResponse.DataSuccessResponse).body
+                    mSelectableUserAdapter.addLast(result)
+                }
+                LoadDataStatus.ERROR -> {
+
+                }
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home){
+        if (item.itemId == android.R.id.home) {
             findNavController().navigateUp()
             return true
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onClick(p0: View?) {
-        if (p0 == binding!!.btnInvite) {
-            if (mSelectedIds.isNotEmpty()){
-                mGroupUtils.inviteSelectedMembers(args.groupChannelUrl, mSelectedIds)
-            }
-        }
     }
 
     private fun setUpRecyclerView() {
@@ -101,40 +113,11 @@ class InviteMemberFragment : BaseFragment<FragmentInviteMemberBinding>(), View.O
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     if (mLayoutManager!!.findLastVisibleItemPosition() == mSelectableUserAdapter.itemCount - 1) {
-                        loadNextUserList(10)
+                        viewModel.onLoadNextUserList()
                     }
                 }
             })
         }
-    }
-
-    /**
-     * Replaces current user list with new list.
-     * Should be used only on initial load.
-     */
-    private fun loadInitialUserList(size: Int) {
-        mListUserQuery = SendBird.createApplicationUserListQuery()
-        mListUserQuery?.setLimit(size)
-        mListUserQuery?.next(UserListQuery.UserListQueryResultHandler { list, e ->
-            if (e != null) {
-                // Error!
-                return@UserListQueryResultHandler
-            }
-            mSelectableUserAdapter.setUserList(list)
-        })
-    }
-
-    private fun loadNextUserList(size: Int) {
-        mListUserQuery?.setLimit(size)
-        mListUserQuery?.next(UserListQuery.UserListQueryResultHandler { list, e ->
-            if (e != null) {
-                // Error!
-                return@UserListQueryResultHandler
-            }
-            for (user in list) {
-                mSelectableUserAdapter.addLast(user)
-            }
-        })
     }
 
 }

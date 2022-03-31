@@ -50,7 +50,7 @@
                 android:gravity="center"
                 android:text="SEND"
                 android:textColor="@drawable/selector_btn_send"
-                android:textSize="10dp" />
+                android:textSize="10sp" />
         </LinearLayout>
 
         <View
